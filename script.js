@@ -1,6 +1,3 @@
-// ==========================================
-// 1. DOM 요소 래핑 객체 (px 단위 매핑 완료)
-// ==========================================
 const els = {
     editor: document.getElementById("textEditor"),
     titleInput: document.getElementById("titleInput"),
@@ -38,13 +35,9 @@ const els = {
     captureArea: document.getElementById("captureArea")
 };
 
-// ==========================================
-// 2. 핵심 실시간 캔버스 렌더링 함수
-// ==========================================
 function updateCanvas() {
     if (!els.captureArea) return;
 
-    // --- [1] 캔버스 크기 및 비율 정책 설정 ---
     const ratio = els.ratioSelect.value;
     els.captureArea.style.width = "";
     els.captureArea.style.height = "";
@@ -66,7 +59,6 @@ function updateCanvas() {
         els.captureArea.style.margin = "";
     }
 
-    // --- [2] 패딩 및 배경 조절 ---
     els.captureArea.style.padding = `${els.paddingY.value}px ${els.paddingX.value}px`;
 
     if (els.bgType.value === "solid") {
@@ -89,25 +81,20 @@ function updateCanvas() {
         }
     }
 
-    // --- [3] 텍스트 스타일 렌더링 및 레이아웃 깨짐 방지 ---
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (textWrapper) {
         let rawHTML = els.editor.innerHTML || "<div><br></div>";
         textWrapper.innerHTML = rawHTML;
 
-        // 구조 파싱 정형화 엔진 구동
         normalizeParagraphs(textWrapper);
 
-        // 대사 강조선 컴포넌트 실시간 색상 동기화
         textWrapper.style.setProperty("--quote-line-color", els.quoteLineColor.value);
         if (els.editor) {
             els.editor.style.setProperty("--quote-line-color", els.quoteLineColor.value);
         }
 
-        // 독립형 스마트 기호 텍스트 컬러 하이라이팅 적용
         applySmartHighlighting(textWrapper);
 
-        // [서식 체인 바인딩 최적화] 기본 서식을 부여하여 하위 노드까지 폰트 강제 상속
         textWrapper.style.fontFamily = els.fontSelect.value;
         textWrapper.style.fontSize = `${els.fontSize.value}px`;
         textWrapper.style.textAlign = els.alignH.value;
@@ -117,13 +104,11 @@ function updateCanvas() {
         textWrapper.style.wordBreak = els.wordBreak.value;
         textWrapper.style.color = els.globalTextColor.value;
 
-        // 장평 조절 시 레이아웃 여백 왜곡 원천 차단 알고리즘
         const scaleFactor = (parseInt(els.fontScaleX.value) || 100) / 100;
         textWrapper.style.display = "block";
         textWrapper.style.width = `${100 / scaleFactor}%`;
         textWrapper.style.transform = `scaleX(${scaleFactor})`;
 
-        // 정렬 기준에 맞는 수학적 마진 상쇄 및 원점 고정 계산
         if (els.alignH.value === "center") {
             textWrapper.style.transformOrigin = "center top";
             textWrapper.style.marginLeft = `calc((100% - 100% / ${scaleFactor}) / 2)`;
@@ -136,7 +121,6 @@ function updateCanvas() {
         }
     }
 
-    // --- [4] 문단 간격(paraSpacing) 반영 구조 ---
     const allParagraphs = textWrapper.querySelectorAll(
         "#canvasTextWrapper > div, #canvasTextWrapper > p, #canvasTextWrapper > .dialogue-line"
     );
@@ -149,7 +133,6 @@ function updateCanvas() {
         }
     });
 
-    // --- [5] 타이틀 / 제작자 인포 레이아웃 정돈 ---
     const infoContainer = document.getElementById("canvasInfo");
     const textContainer = document.getElementById("canvasTextContainer");
 
@@ -158,7 +141,6 @@ function updateCanvas() {
             textContainer.appendChild(infoContainer);
         }
 
-        // 정렬 상태 매핑
         if (els.alignH.value === "center") {
             infoContainer.style.justifyContent = "center";
         } else if (els.alignH.value === "right") {
@@ -169,7 +151,6 @@ function updateCanvas() {
 
         const baseColor = els.globalTextColor.value;
         const fontName = els.fontSelect.value;
-        // 본문 크기에 유연하게 반응하되, 너무 작아지지 않게 밸런스 유지
         const computedFontSize = Math.max(12, parseFloat(els.fontSize.value) * 0.65);
 
         const titleVal = els.titleInput.value.trim();
@@ -177,13 +158,10 @@ function updateCanvas() {
 
         let infoHTML = "";
 
-        // 하나라도 입력값이 있을 때만 출처 기호(—)와 함께 렌더링 구동
         if (titleVal || creatorVal) {
-            // 정통 에디토리얼을 상징하는 긴 대시 기호(—) 배치
             infoHTML += `<span class="info-dash" style="color: ${baseColor}; font-size: ${computedFontSize}px;">｜</span>`;
 
             if (titleVal && creatorVal) {
-                // 둘 다 있을 때: [ 타이틀 . 제작자 ] 구조
                 infoHTML += `
                     <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
                         ${titleVal}
@@ -193,13 +171,11 @@ function updateCanvas() {
                         ${creatorVal}
                     </span>`;
             } else if (titleVal) {
-                // 타이틀만 있을 때
                 infoHTML += `
                     <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
                         ${titleVal}
                     </span>`;
             } else if (creatorVal) {
-                // 제작자만 있을 때
                 infoHTML += `
                     <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
                         ${creatorVal}
@@ -209,7 +185,6 @@ function updateCanvas() {
 
         infoContainer.innerHTML = infoHTML;
 
-        // 인포 영역 조건부 블라인드 처리 (여백 유발 방지)
         if (!titleVal && !creatorVal) {
             infoContainer.style.display = "none";
         } else {
@@ -217,7 +192,6 @@ function updateCanvas() {
         }
     }
 
-    // [오류 수정 및 안전 조치] 형광펜 실시간 색상 동기화 함수가 존재할 때만 안전하게 실행
     if (typeof syncLiveHighlights === "function") {
         try {
             syncLiveHighlights();
@@ -227,9 +201,6 @@ function updateCanvas() {
     }
 }
 
-// ==========================================
-// 3. 독립형 고성능 스마트 기호 컬러 매핑 엔진 (서체 결크 상속 보완완료)
-// ==========================================
 function applySmartHighlighting(container) {
     const hasQuotes = els.enableQuoteColor.checked;
     const hasParens = els.enableParenColor.checked;
@@ -255,14 +226,14 @@ function applySmartHighlighting(container) {
 
     const intervals = [];
     if (hasQuotes) {
-        const quoteRegex = /("[^"\n]*"|'[^'\n]*'|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/g;
+        const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/g;
         let match;
         while ((match = quoteRegex.exec(fullText)) !== null) {
             intervals.push({ start: match.index, end: match.index + match[0].length, color: els.quoteColor.value });
         }
     }
     if (hasParens) {
-        const parenRegex = /(\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
+        const parenRegex = /(\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]* \s*》)/g;
         let match;
         while ((match = parenRegex.exec(fullText)) !== null) {
             intervals.push({ start: match.index, end: match.index + match[0].length, color: els.parenColor.value });
@@ -291,7 +262,6 @@ function applySmartHighlighting(container) {
                 const span = document.createElement("span");
                 span.style.color = item.color;
                 span.style.fontWeight = "inherit";
-                // [핵심 추가] 동적으로 분해 재조립된 칩에도 설정창의 글꼴 패밀리가 끊기지 않고 상속 강제 주입
                 span.style.fontFamily = "inherit";
                 span.style.backgroundColor = "transparent";
                 span.textContent = p2;
@@ -314,7 +284,6 @@ function applySmartHighlighting(container) {
     });
 }
 
-// 형광펜 색상 실시간 전체 동기화 엔진 (3채널 독립 변동 추적 스캔 스크립트)
 let lastHlColors = { A: "#fef08a", B: "#bbf7d0", C: "#bfdbfe" };
 let lastSubTextColor = "#64748b";
 
@@ -325,27 +294,22 @@ function hexToRgb(hex) {
     return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : "";
 }
 
-// 기존 syncLiveHighlights() 함수 전체를 아래 코드로 완전히 덮어씌워 주세요.
 function syncLiveHighlights(overrideColors = null) {
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (!textWrapper) return;
 
-    // 프리셋 로드 시 overrideColors 객체가 들어오면 그 값을 최신 피커 값으로 인정하고,
-    // 기존 추적용 oldRgb는 프리셋 적용 '직전'의 과거 값(lastHlColors)을 그대로 사용하여 본문 태그를 정상 추적합니다.
     let baseA = lastHlColors.A;
     let baseB = lastHlColors.B;
     let baseC = lastHlColors.C;
     let baseSub = lastSubTextColor;
 
     if (overrideColors) {
-        // 프리셋에서 전달된 새 색상값들을 피커 요소에 먼저 강제 주입
         if (overrideColors.hlColorA && els.hlColorA) els.hlColorA.value = overrideColors.hlColorA;
         if (overrideColors.hlColorB && els.hlColorB) els.hlColorB.value = overrideColors.hlColorB;
         if (overrideColors.hlColorC && els.hlColorC) els.hlColorC.value = overrideColors.hlColorC;
         if (overrideColors.subTextColor && els.subTextColor) els.subTextColor.value = overrideColors.subTextColor;
     }
 
-    // 브라우저 렌더링 RGB 값과의 공백 무관 매칭을 위한 문자열 공백 가공 처리
     const oldRgbA = hexToRgb(baseA).replace(/\s+/g, "");
     const oldRgbB = hexToRgb(baseB).replace(/\s+/g, "");
     const oldRgbC = hexToRgb(baseC).replace(/\s+/g, "");
@@ -359,10 +323,8 @@ function syncLiveHighlights(overrideColors = null) {
     const updateSpansColor = (container) => {
         if (!container) return;
 
-        // 1. 일반 span 태그 스타일 추적 치환
         const spans = container.getElementsByTagName("span");
         for (let span of spans) {
-            // 형광펜 배경색 실시간 업데이트
             const bg = span.style.backgroundColor;
             if (bg && bg !== "transparent" && bg !== "initial") {
                 const normalizedBg = bg.replace(/\s+/g, "");
@@ -371,7 +333,6 @@ function syncLiveHighlights(overrideColors = null) {
                 else if (normalizedBg === oldRgbC) span.style.backgroundColor = targetColorC;
             }
 
-            // 보조 글자색 실시간 업데이트
             const fg = span.style.color;
             if (fg && fg !== "transparent" && fg !== "initial") {
                 const normalizedFg = fg.replace(/\s+/g, "");
@@ -381,7 +342,6 @@ function syncLiveHighlights(overrideColors = null) {
             }
         }
 
-        // 2. 브라우저 execCommand가 생성하는 font 태그 색상까지 추적 보정
         const fonts = container.getElementsByTagName("font");
         for (let font of fonts) {
             const fontColor = font.color || font.style.color;
@@ -398,20 +358,15 @@ function syncLiveHighlights(overrideColors = null) {
         }
     };
 
-    // 프리셋 로드 시 원본 에디터를 먼저 치환해야 updateCanvas()가 이를 복사하여 정상 렌더링함
     updateSpansColor(els.editor);
     updateSpansColor(textWrapper);
 
-    // 색상 변동 판단용 레코드 최신화
     if (els.hlColorA) lastHlColors.A = els.hlColorA.value;
     if (els.hlColorB) lastHlColors.B = els.hlColorB.value;
     if (els.hlColorC) lastHlColors.C = els.hlColorC.value;
     if (els.subTextColor) lastSubTextColor = els.subTextColor.value;
 }
 
-// ==========================================
-// 4. 에디터 툴바 컴포넌트 액션 바인딩
-// ==========================================
 document.getElementById("btnBold").addEventListener("click", () => {
     document.execCommand("bold", false, null);
     updateCanvas();
@@ -421,23 +376,19 @@ document.getElementById("btnItalic").addEventListener("click", () => {
     updateCanvas();
 });
 
-// 1) 드래그 선택 영역 앞뒤 자동 따옴표 감싸기 엔진
 document.getElementById("btnQuoteWrap").addEventListener("click", () => {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
     const range = selection.getRangeAt(0);
     const selectedText = range.toString();
-    // 브라우저 포커스 선택 역을 유지한 채 원자단위 데이터 교체 처리
     document.execCommand("insertText", false, `“${selectedText}”`);
     updateCanvas();
 });
 
-// 기존 4번 영역의 btnSubText 이벤트를 아래 코드로 완전히 교체해주세요
 document.getElementById("btnSubText").addEventListener("click", () => {
     const color = els.subTextColor ? els.subTextColor.value : "#64748b";
     document.execCommand("foreColor", false, color);
 
-    // [핵심 추가] 글자에 색을 입힌 직후, 이전에 바뀐 상태의 히스토리와 현재 에디터 상태를 강제로 일치시킵니다.
     if (typeof syncLiveHighlights === "function") {
         syncLiveHighlights();
     }
@@ -445,7 +396,6 @@ document.getElementById("btnSubText").addEventListener("click", () => {
     updateCanvas();
 });
 
-// 3) 드래그 선택 영역 3종 독립 채널 형광펜 드롭다운 멀티플렉서
 document.getElementById("selHighlight").addEventListener("change", function () {
     const val = this.value;
     if (!val) return;
@@ -456,7 +406,7 @@ document.getElementById("selHighlight").addEventListener("change", function () {
     if (val === "C") color = els.hlColorC.value;
 
     document.execCommand("backColor", false, color);
-    this.value = ""; // 제어 명령 하달 직후 드롭다운 마크를 초기 상태로 리셋 공정
+    this.value = "";
     updateCanvas();
 });
 
@@ -497,9 +447,6 @@ els.editor.addEventListener("keydown", function (e) {
     }
 });
 
-// ==========================================
-// 5. 초기 부팅 및 컴포넌트 이벤트 통합 관리
-// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     els.tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
@@ -594,15 +541,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // [서체 연동 엔진 버그픽스] 첫 부팅 시 콤보박스에 정의되어 있는 기본 폰트 명칭을 강제로 스캔하여 동기화 가동
     setTimeout(() => {
         updateCanvas();
     }, 50);
 });
 
-// ==========================================
-// 6. 이미지 클립보드 실제 복사 및 다운로드 기능
-// ==========================================
 document.getElementById("btnCopy").addEventListener("click", () => {
     if (!els.captureArea) return;
     const originalHeight = els.captureArea.style.height;
@@ -692,9 +635,6 @@ document.getElementById("textEditor").addEventListener("paste", function (e) {
     document.execCommand("insertText", false, text);
 });
 
-// ==========================================
-// 7. 딥-파싱 문단 정형화 엔진 (하단 빈문단 트림 보완)
-// ==========================================
 function normalizeParagraphs(container) {
     const paragraphs = [];
     let currentParagraphNodes = [];
@@ -739,14 +679,12 @@ function normalizeParagraphs(container) {
     Array.from(container.childNodes).forEach(parseNodes);
     flushParagraph();
 
-    // [핵심 보정] 배열의 뒷부분부터 스캔하면서 완전히 비어있는 문단은 아예 생성 대상에서 탈락시킴
     while (paragraphs.length > 0) {
         const lastPara = paragraphs[paragraphs.length - 1];
-        // 대사선이 아니고, 노드가 아예 없거나 텍스트 알맹이가 없는 빈 태그일 경우
         if (!(lastPara instanceof HTMLElement)) {
             const isTextEmpty = lastPara.every((node) => node.textContent.trim() === "");
             if (isTextEmpty) {
-                paragraphs.pop(); // 탈락
+                paragraphs.pop();
                 continue;
             }
         }

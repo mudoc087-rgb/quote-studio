@@ -1,20 +1,15 @@
-/* ==========================================================================
-   발췌 문구 생성기 Studio - Minimalist White Theme (Optimized Layout)
-   ========================================================================== */
-
-/* 1. 글로벌 변수 및 초기화 */
 :root {
-    --bg-main: #f8fafc; /* 부드러운 화이트/연회색 바탕 */
-    --bg-card: #ffffff; /* 순백색 카드 배경 */
-    --text-main: #0f172a; /* 깊은 다크 그레이 (가독성 확보) */
-    --text-muted: #64748b; /* 은은한 서브 텍스트 색상 */
-    --border-color: #e2e8f0; /* 아주 연한 테두리 선 */
-    --accent-color: #000000; /* 미니멀 포인트 블랙 */
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --accent-color: #000000;
     --accent-hover: #1e293b;
-    --danger-color: #ef4444; /* 지우기 버튼용 레드 */
+    --danger-color: #ef4444;
 
-    --radius-pill: 9999px; /* 알약 형태 라디우스 */
-    --radius-md: 16px; /* 모던 카드 라디우스 확장 */
+    --radius-pill: 9999px;
+    --radius-md: 16px;
     --radius-sm: 8px;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.04);
@@ -29,11 +24,6 @@
     box-sizing: border-box;
 }
 
-/* ==========================================================================
-   스튜디오 전용 고품질 에디토리얼 웹폰트 에셋 통합 로드
-   ========================================================================== */
-
-/* 1. 마루부리 (MaruBuri) */
 @font-face {
     font-family: "MaruBuri";
     src: url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-ExtraLight.woff2) format("woff2");
@@ -65,7 +55,6 @@
     font-display: swap;
 }
 
-/* 2. 프리텐다드 (Pretendard) - 다중 웨이트 최적화 */
 @font-face {
     font-family: "Pretendard";
     src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2") format("woff2");
@@ -109,7 +98,6 @@
     font-display: swap;
 }
 
-/* 3. KoPubWorld 돋움체 (KoPubWorldDotum) */
 @font-face {
     font-family: "KoPubWorldDotum";
     src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_6@1.0/KoPubWorldDotum-Light.woff") format("woff");
@@ -129,7 +117,6 @@
     font-display: swap;
 }
 
-/* 5. 조선일보명조 (ChosunIlboMyungjo) */
 @font-face {
     font-family: "ChosunIlboMyungjo";
     src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff") format("woff");
@@ -137,13 +124,13 @@
     font-display: swap;
 }
 
-/* 6. 리디바탕 (Ridibatang) */
 @font-face {
     font-family: "Ridibatang";
     src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff") format("woff");
     font-weight: normal;
     font-display: swap;
 }
+
 body.minimal-theme {
     margin: 0;
     padding: 0;
@@ -162,7 +149,6 @@ body.minimal-theme {
     display: flex;
 }
 
-/* 📌 좌측 컨트롤러들을 위한 고정 배치 레이아웃 스페이스 확보 */
 .left-floating-sidebar {
     position: absolute;
     top: 30px;
@@ -173,20 +159,19 @@ body.minimal-theme {
     flex-direction: column;
     gap: 16px;
     z-index: 10;
-    pointer-events: none; /* 빈 공간은 클릭 가능하게 처리 */
+    pointer-events: none;
 }
 .left-floating-sidebar > * {
-    pointer-events: auto; /* 카드 내부는 클릭 작동 구현 */
+    pointer-events: auto;
 }
 
-/* 2. 메인 워크스페이스 (결과물 화면 렌더링 영역) */
 .workspace {
     flex: 1;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px 40px 40px 440px; /* 좌측 공간 확보 균형 최적화 */
+    padding: 40px 40px 40px 440px;
     overflow: auto;
     background-color: var(--bg-main);
 }
@@ -262,24 +247,19 @@ body.minimal-theme {
     text-align: justify !important;
 }
 
-/* ==========================================
-   문학 에디토리얼 스타일 출처란 디자인 (회색 박스 완전 제거)
-   ========================================== */
 .info-area {
     display: flex;
     align-items: center;
     gap: 5px;
-    margin-top: 24px; /* 본문과의 우아한 거리감 확보 */
+    margin-top: 24px;
     transition: all 0.2s ease;
 }
 
-/* 대시 기호 스타일 */
 .info-dash {
     font-weight: 300;
     opacity: 0.65;
 }
 
-/* 텍스트 요소 공동 스타일 (박스 배경 완전 제거) */
 .info-text-node {
     display: inline-flex;
     align-items: center;
@@ -290,7 +270,6 @@ body.minimal-theme {
     background: transparent !important;
 }
 
-/* 타이틀과 제작자 사이를 나누는 미니멀 도트 기호 */
 .info-divider {
     display: inline-block;
     width: 3px;
@@ -299,7 +278,7 @@ body.minimal-theme {
     margin: 0 4px;
     opacity: 0.35;
 }
-/* 3. 본문 내용 문구 플로팅 카드 (Floating Editor Card) */
+
 .floating-editor-card {
     position: relative;
     width: 100%;
@@ -328,7 +307,6 @@ body.minimal-theme {
     text-transform: uppercase;
 }
 
-/* 알약 형태 에디터 툴바 */
 .editor-toolbar.pill-group {
     display: flex;
     align-items: center;
@@ -359,11 +337,7 @@ body.minimal-theme {
     background-color: rgba(239, 68, 68, 0.08);
     color: var(--danger-color);
 }
-/* ==========================================
-   에디터 툴바 레이아웃 깨짐 방지 및 한 줄 고정
-   ========================================== */
 
-/* 1. 툴바 내부 요소들이 절대 밑으로 떨어지지 않도록 강제 */
 .editor-toolbar.pill-group {
     display: flex;
     align-items: center;
@@ -371,19 +345,17 @@ body.minimal-theme {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-pill);
     padding: 3px;
-    flex-wrap: nowrap; /* 절대 한 줄로만 배치 (줄바꿈 원천 차단) */
-    width: max-content; /* 내부 콘텐츠 총합 너비만큼 툴바가 자동으로 확장 */
-    max-width: 100%; /* 부모 영역을 넘지 않도록 제한 */
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: 100%;
 }
 
-/* 2. 내부 버튼 및 드롭다운 글자가 찌그러지거나 잘리는 현상 방지 */
 .editor-toolbar.pill-group button,
 .editor-toolbar.pill-group .toolbar-select {
-    white-space: nowrap; /* 버튼 안의 텍스트가 강제로 줄바꿈되는 것 방지 */
-    flex-shrink: 0; /* 공간이 좁아져도 크기가 압착되지 않도록 고정 */
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-/* 3. 미니멀 드롭다운 최종 자수성가 스타일 (여백 및 화살표 완벽 최적화) */
 .editor-toolbar.pill-group .toolbar-select {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -391,7 +363,7 @@ body.minimal-theme {
 
     background: none;
     border: none;
-    padding: 6px 20px 6px 10px; /* 불필요하게 넓었던 좌우 패딩을 미세하게 다이어트 */
+    padding: 6px 20px 6px 10px;
     font-size: 11px;
     font-weight: 500;
     color: var(--text-muted);
@@ -401,25 +373,23 @@ body.minimal-theme {
     outline: none;
     transition: var(--transition-base);
 
-    /* 은은하고 미니멀한 다운 화살표 */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 6px center; /* 화살표 위치도 우측 끝으로 밀착 */
+    background-position: right 6px center;
     background-size: 9px;
 }
 
-/* 드롭다운 호버 스타일 */
 .editor-toolbar.pill-group .toolbar-select:hover {
     background-color: rgba(0, 0, 0, 0.04);
     color: var(--text-main);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230f172a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
 }
 
-/* 옵션 팝업창 내부 스타일 정의 */
 .editor-toolbar.pill-group .toolbar-select option {
     background-color: var(--bg-card);
     color: var(--text-main);
 }
+
 #textEditor {
     width: 100%;
     min-height: 120px;
@@ -481,14 +451,13 @@ body.minimal-theme {
     border-color: var(--accent-color);
 }
 
-/* 4. 메뉴독바 디자인 최적화 (상단 여백 제거 및 복사/저장 정돈) */
 .floating-control-dock.pill-container {
-    margin-top: 8px; /* 의미 없는 큰 상단 여백 제거 및 밀착 균형 조절 */
+    margin-top: 8px;
     width: 100%;
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-pill);
-    padding: 6px 8px 6px 14px; /* 내부 버튼들과 안정적인 패딩 크기 확보 */
+    padding: 6px 8px 6px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -565,16 +534,15 @@ body.minimal-theme {
     background-color: var(--accent-hover);
 }
 
-/* [교체] 상세 설정창 - 활성화 상태가 아닐 때는 완전히 숨김 처리 */
 .adaptive-settings-window {
     width: 100%;
     background-color: var(--bg-card);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
-    border: 1px solid transparent; /* 초기 테두리 투명화 */
-    padding: 0px 22px; /* 위아래 패딩 초기화 */
+    border: 1px solid transparent;
+    padding: 0px 22px;
 
-    height: 0px; /* 초기 높이 차단 */
+    height: 0px;
     max-height: 420px;
     display: flex;
     flex-direction: column;
@@ -587,7 +555,6 @@ body.minimal-theme {
     pointer-events: none;
 }
 
-/* [추가] 독바 아이콘이 클릭되어 윈도우가 활성화되었을 때의 스타일 */
 .adaptive-settings-window.active {
     height: auto !important;
     min-height: 60px;
@@ -598,17 +565,15 @@ body.minimal-theme {
     margin-top: 8px;
 }
 
-/* 상세 설정 내부의 각 탭 패널 제어 */
 .tab-panel {
     display: none;
     width: 100%;
     height: 100%;
     flex-direction: column;
-    overflow-y: auto; /* 내용물이 많으면 탭 내부에서 독립 스크롤 수행 */
+    overflow-y: auto;
     padding-right: 4px;
 }
 
-/* 스크롤바 미니멀 UI 커스텀 스타일 */
 .tab-panel::-webkit-scrollbar,
 .preset-list-scroll::-webkit-scrollbar,
 #textEditor::-webkit-scrollbar {
@@ -638,7 +603,6 @@ body.minimal-theme {
     border-top: 1px solid var(--border-color);
 }
 
-/* 상세 설정 내부의 그리드 및 행 배치 최적화 */
 .control-minimal-row {
     display: flex;
     align-items: center;
@@ -659,7 +623,6 @@ body.minimal-theme {
     flex-shrink: 0;
 }
 
-/* 셀렉트, 인풋 등 컨트롤 폼 요소 정돈 */
 .control-minimal-row select,
 .control-minimal-row input[type="text"]:not(#presetNameInput) {
     height: 32px;
@@ -678,7 +641,6 @@ body.minimal-theme {
     border-color: var(--accent-color);
 }
 
-/* 미니멀 스텝 인풋 */
 .stepper-minimal {
     display: flex;
     align-items: center;
@@ -716,7 +678,6 @@ body.minimal-theme {
     color: var(--text-main);
 }
 
-/* 미니멀 레인지 슬라이더 */
 .control-minimal-row input[type="range"] {
     -webkit-appearance: none;
     width: 130px;
@@ -740,7 +701,6 @@ body.minimal-theme {
     transform: scale(1.2);
 }
 
-/* 컬러 피커 컴포넌트 정돈 */
 .picker-minimal-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -780,7 +740,6 @@ body.minimal-theme {
     color: var(--text-muted);
 }
 
-/* 체크박스 그룹 정돈 */
 .checkbox-minimal-group {
     display: flex;
     gap: 16px;
@@ -805,7 +764,6 @@ body.minimal-theme {
     height: 14px;
 }
 
-/* 세그먼트 가로 버튼 정렬 컨트롤 */
 .segmented-control {
     display: flex;
     background-color: var(--bg-main);
@@ -838,7 +796,6 @@ body.minimal-theme {
     font-weight: 600;
 }
 
-/* 프리셋 저장 박스 및 목록 리스트 */
 .preset-save-box-minimal {
     display: flex;
     gap: 6px;
@@ -884,7 +841,6 @@ body.minimal-theme {
     padding-right: 2px;
 }
 
-/* 프리셋 아이템 스타일 */
 .preset-item {
     display: flex;
     align-items: center;
@@ -921,7 +877,6 @@ body.minimal-theme {
     color: var(--danger-color);
 }
 
-/* 파일 업로드 스타일 */
 input[type="file"]::file-selector-button {
     height: 28px;
     padding: 0 12px;
@@ -940,19 +895,15 @@ input[type="file"]::file-selector-button:hover {
     background-color: var(--bg-main);
 }
 
-/* [교체] 대사 강조선 컴포넌트 실시간 테두리 노출 보장 */
 .dialogue-line {
     display: block !important;
-    border-left: 3px solid var(--quote-line-color, #000000) !important; /* 형태와 컬러 매핑 필수 추가 */
+    border-left: 3px solid var(--quote-line-color, #000000) !important;
     padding-left: 12px !important;
     margin-bottom: inherit;
     text-align: inherit;
     min-height: 1.6em;
     box-sizing: border-box;
 }
-/* ==========================================================================
-   배경 커스텀 그라데이션 전용 레이아웃 완벽 교체 (사이드바 최적화)
-   ========================================================================== */
 
 .gradient-config-box {
     display: flex;
@@ -967,18 +918,16 @@ input[type="file"]::file-selector-button:hover {
     box-sizing: border-box;
 }
 
-/* 2색/3색 피커를 감싸는 유연한 컨테이너 */
 .gradient-picker-container {
     display: flex;
-    flex-wrap: wrap; /* 공간 부족 시 자동으로 자연스럽게 줄바꿈 처리 */
+    flex-wrap: wrap;
     gap: 8px;
     width: 100%;
 }
 
-/* 각각의 컬러 피커 독립 아이템 (사이드바 너비 내에서 반반씩 채우도록 보장) */
 .gradient-picker-container .picker-cell {
     display: flex !important;
-    flex: 1 1 calc(50% - 4px); /* 기본 가로 너비를 2열 정렬 크기로 고정 */
+    flex: 1 1 calc(50% - 4px);
     min-width: 130px;
     align-items: center;
     justify-content: flex-start;
@@ -990,12 +939,10 @@ input[type="file"]::file-selector-button:hover {
     box-sizing: border-box;
 }
 
-/* 3색 선택 시 등장하는 세 번째 피커 정렬 보정 */
 #grad3Wrapper {
-    flex: 1 1 100%; /* 3색 활성화 시 혼자 3번째 행 전체 너비를 채워 레이아웃 균형 유지 */
+    flex: 1 1 100%;
 }
 
-/* 컬러 인풋 서클 및 사각형 디자인 초기화 */
 .gradient-picker-container input[type="color"] {
     -webkit-appearance: none;
     border: none;
@@ -1013,7 +960,6 @@ input[type="file"]::file-selector-button:hover {
     border-radius: 4px;
 }
 
-/* 내부 텍스트 가독성 및 폰트 크기 최적화 */
 .gradient-picker-container .picker-cell span {
     font-size: 12px !important;
     font-weight: 500;
@@ -1021,7 +967,6 @@ input[type="file"]::file-selector-button:hover {
     white-space: nowrap;
 }
 
-/* 라디오 버튼 그룹 여백 정돈 */
 .radio-minimal-group {
     display: flex;
     gap: 14px;
