@@ -95,6 +95,15 @@ function updateCanvas() {
 
         applySmartHighlighting(textWrapper);
 
+        const canvasSpans = textWrapper.getElementsByTagName("span");
+        for (let span of canvasSpans) {
+            if (span.style.backgroundColor && span.style.backgroundColor !== "transparent") {
+                span.style.display = "inline";
+                span.style.boxDecorationBreak = "clone";
+                span.style.webkitBoxDecorationBreak = "clone";
+            }
+        }
+
         textWrapper.style.fontFamily = els.fontSelect.value;
         textWrapper.style.fontSize = `${els.fontSize.value}px`;
         textWrapper.style.textAlign = els.alignH.value;
@@ -233,7 +242,7 @@ function applySmartHighlighting(container) {
         }
     }
     if (hasParens) {
-        const parenRegex = /(\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]* \s*》)/g;
+        const parenRegex = /(\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*\s*》)/g;
         let match;
         while ((match = parenRegex.exec(fullText)) !== null) {
             intervals.push({ start: match.index, end: match.index + match[0].length, color: els.parenColor.value });
@@ -331,6 +340,10 @@ function syncLiveHighlights(overrideColors = null) {
                 if (normalizedBg === oldRgbA) span.style.backgroundColor = targetColorA;
                 else if (normalizedBg === oldRgbB) span.style.backgroundColor = targetColorB;
                 else if (normalizedBg === oldRgbC) span.style.backgroundColor = targetColorC;
+
+                span.style.display = "inline";
+                span.style.boxDecorationBreak = "clone";
+                span.style.webkitBoxDecorationBreak = "clone";
             }
 
             const fg = span.style.color;
@@ -367,6 +380,47 @@ function syncLiveHighlights(overrideColors = null) {
     if (els.subTextColor) lastSubTextColor = els.subTextColor.value;
 }
 
+// 🛠️ [수정 및 핵심 주입] 단어(공백) 단위 세분화 트릭으로 사각형 통짜 버그와 자간 세로줄 균열 동시 해결
+function prepareCanvasForCapture(container) {
+    const targetSpans = container.querySelectorAll("span");
+    targetSpans.forEach((span) => {
+        const bg = span.style.backgroundColor;
+        if (bg && bg !== "transparent" && bg !== "initial") {
+            // 복구용 원본 마크업 백업
+            span.setAttribute("data-original-html", span.innerHTML);
+
+            // 1글자 단위 분할은 미세한 세로 균열이 발생하므로 공백(\s+)을 기준으로 덩어리 분할
+            const tokens = span.textContent.split(/(\s+)/);
+            const fragmentHTML = tokens
+                .map((token) => {
+                    if (token.trim().length === 0) {
+                        // 공백은 배경색을 먹이지 않고 투명하게 유지하여 줄바꿈 시 통짜 사각형을 방지합니다.
+                        return token;
+                    }
+                    // 단어 단위 덩어리에만 스타일을 주입하고 좌우 padding/margin 미세 보정으로 균열 제거
+                    return `<span style="background-color: ${bg}; display: inline; padding: 0 2px; margin: 0 -2px; color: inherit; font-family: inherit; font-weight: inherit; font-size: inherit; line-height: inherit; box-decoration-break: clone; -webkit-box-decoration-break: clone;">${token}</span>`;
+                })
+                .join("");
+
+            span.innerHTML = fragmentHTML;
+            span.style.backgroundColor = "transparent"; // 부모 Wrapper는 투명하게 변환
+        }
+    });
+}
+
+// 🛠️ [수정] 복사/저장 완료 후 완벽하게 원본 에디터 구조로 되돌림
+function restoreCanvasAfterCapture(container) {
+    const targetSpans = container.querySelectorAll("span[data-original-html]");
+    targetSpans.forEach((span) => {
+        const originalHTML = span.getAttribute("data-original-html");
+        const restoredBg = span.querySelector("span")?.style.backgroundColor || "transparent";
+
+        span.innerHTML = originalHTML;
+        span.style.backgroundColor = restoredBg;
+        span.removeAttribute("data-original-html");
+    });
+}
+
 document.getElementById("btnBold").addEventListener("click", () => {
     document.execCommand("bold", false, null);
     updateCanvas();
@@ -388,11 +442,9 @@ document.getElementById("btnQuoteWrap").addEventListener("click", () => {
 document.getElementById("btnSubText").addEventListener("click", () => {
     const color = els.subTextColor ? els.subTextColor.value : "#64748b";
     document.execCommand("foreColor", false, color);
-
     if (typeof syncLiveHighlights === "function") {
         syncLiveHighlights();
     }
-
     updateCanvas();
 });
 
@@ -407,6 +459,15 @@ document.getElementById("selHighlight").addEventListener("change", function () {
 
     document.execCommand("backColor", false, color);
     this.value = "";
+
+    const spans = els.editor.getElementsByTagName("span");
+    for (let span of spans) {
+        if (span.style.backgroundColor && span.style.backgroundColor !== "transparent") {
+            span.style.display = "inline";
+            span.style.boxDecorationBreak = "clone";
+            span.style.webkitBoxDecorationBreak = "clone";
+        }
+    }
     updateCanvas();
 });
 
@@ -432,6 +493,7 @@ document.getElementById("btnQuoteLine").addEventListener("click", () => {
     }
     updateCanvas();
 });
+
 els.editor.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
         const selection = window.getSelection();
@@ -546,6 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 50);
 });
 
+// 복사 기능
 document.getElementById("btnCopy").addEventListener("click", () => {
     if (!els.captureArea) return;
     const originalHeight = els.captureArea.style.height;
@@ -553,9 +616,14 @@ document.getElementById("btnCopy").addEventListener("click", () => {
         els.captureArea.style.height = els.captureArea.scrollHeight + "px";
     }
 
+    // 캡처 가공 실행
+    prepareCanvasForCapture(els.captureArea);
+
     html2canvas(els.captureArea, { useCORS: true, allowTaint: true, backgroundColor: null, scale: 2 })
         .then((canvas) => {
+            restoreCanvasAfterCapture(els.captureArea);
             els.captureArea.style.height = originalHeight;
+
             canvas.toBlob((blob) => {
                 if (!blob) {
                     alert("이미지 변환 실패");
@@ -573,10 +641,12 @@ document.getElementById("btnCopy").addEventListener("click", () => {
             }, "image/png");
         })
         .catch(() => {
+            restoreCanvasAfterCapture(els.captureArea);
             els.captureArea.style.height = originalHeight;
         });
 });
 
+// 저장 기능
 document.getElementById("btnSave").addEventListener("click", () => {
     if (!els.captureArea) return;
     const originalWidth = els.captureArea.style.width;
@@ -585,16 +655,22 @@ document.getElementById("btnSave").addEventListener("click", () => {
         els.captureArea.style.height = els.captureArea.scrollHeight + "px";
     }
 
+    // 캡처 가공 실행
+    prepareCanvasForCapture(els.captureArea);
+
     html2canvas(els.captureArea, { useCORS: true, allowTaint: true, backgroundColor: null, scale: 2 })
         .then((canvas) => {
+            restoreCanvasAfterCapture(els.captureArea);
             els.captureArea.style.width = originalWidth;
             els.captureArea.style.height = originalHeight;
+
             const link = document.createElement("a");
             link.download = `excerpt_${Date.now()}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
         })
         .catch(() => {
+            restoreCanvasAfterCapture(els.captureArea);
             els.captureArea.style.width = originalWidth;
             els.captureArea.style.height = originalHeight;
         });
