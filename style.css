@@ -559,7 +559,11 @@ body.minimal-theme {
     color: var(--text-main);
     margin-bottom: 16px;
     padding-bottom: 8px;
+    text-align: center;
     border-bottom: 1px solid var(--border-color);
+    margin-top: 16px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
 }
 
 /* 상세 설정 내부의 그리드 및 행 배치 최적화 */
@@ -710,6 +714,7 @@ body.minimal-theme {
     gap: 16px;
     width: 100%;
     padding: 4px 0;
+    margin-top: -20px;
 }
 
 .checkbox-minimal-group label {
