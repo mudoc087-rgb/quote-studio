@@ -16,7 +16,10 @@ const els = {
     gradColor3: document.getElementById("gradColor3"),
     gradientDir: document.getElementById("gradientDir"),
     globalTextColor: document.getElementById("globalTextColor"),
-    hlColor: document.getElementById("hlColor"),
+    subTextColor: document.getElementById("subTextColor"),
+    hlColorA: document.getElementById("hlColorA"),
+    hlColorB: document.getElementById("hlColorB"),
+    hlColorC: document.getElementById("hlColorC"),
     quoteLineColor: document.getElementById("quoteLineColor"),
     enableQuoteColor: document.getElementById("enableQuoteColor"),
     quoteColor: document.getElementById("quoteColor"),
@@ -155,6 +158,7 @@ function updateCanvas() {
             textContainer.appendChild(infoContainer);
         }
 
+        // 정렬 상태 매핑
         if (els.alignH.value === "center") {
             infoContainer.style.justifyContent = "center";
         } else if (els.alignH.value === "right") {
@@ -163,48 +167,64 @@ function updateCanvas() {
             infoContainer.style.justifyContent = "flex-start";
         }
 
-        let infoHTML = "";
         const baseColor = els.globalTextColor.value;
         const fontName = els.fontSelect.value;
-        const computedFontSize = Math.max(11, parseFloat(els.fontSize.value) * 0.7);
-        const chipBg = `${baseColor}0f`;
+        // 본문 크기에 유연하게 반응하되, 너무 작아지지 않게 밸런스 유지
+        const computedFontSize = Math.max(12, parseFloat(els.fontSize.value) * 0.65);
 
-        if (els.titleInput.value.trim()) {
-            infoHTML += `
-                <span class="info-chip" style="
-                    color: ${baseColor}; 
-                    font-family: ${fontName}; 
-                    font-size: ${computedFontSize}px; 
-                    background-color: ${chipBg};
-                ">
-                    ${els.titleInput.value.trim()}
-                </span>`;
-        }
+        const titleVal = els.titleInput.value.trim();
+        const creatorVal = els.creatorInput.value.trim();
 
-        if (els.creatorInput.value.trim()) {
-            infoHTML += `
-                <span class="info-chip" style="
-                    color: ${baseColor}; 
-                    opacity: 0.75;
-                    font-family: ${fontName}; 
-                    font-size: ${computedFontSize}px; 
-                    background-color: ${chipBg};
-                ">
-                    @${els.creatorInput.value.trim()}
-                </span>`;
+        let infoHTML = "";
+
+        // 하나라도 입력값이 있을 때만 출처 기호(—)와 함께 렌더링 구동
+        if (titleVal || creatorVal) {
+            // 정통 에디토리얼을 상징하는 긴 대시 기호(—) 배치
+            infoHTML += `<span class="info-dash" style="color: ${baseColor}; font-size: ${computedFontSize}px;">｜</span>`;
+
+            if (titleVal && creatorVal) {
+                // 둘 다 있을 때: [ 타이틀 . 제작자 ] 구조
+                infoHTML += `
+                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${titleVal}
+                    </span>
+                    <span class="info-divider" style="background-color: ${baseColor};"></span>
+                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${creatorVal}
+                    </span>`;
+            } else if (titleVal) {
+                // 타이틀만 있을 때
+                infoHTML += `
+                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${titleVal}
+                    </span>`;
+            } else if (creatorVal) {
+                // 제작자만 있을 때
+                infoHTML += `
+                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${creatorVal}
+                    </span>`;
+            }
         }
 
         infoContainer.innerHTML = infoHTML;
 
-        // [추가] 인포 영역에 내용이 아예 없으면 display를 none으로 꺾어 여백 유발 차단
-        if (!els.titleInput.value.trim() && !els.creatorInput.value.trim()) {
+        // 인포 영역 조건부 블라인드 처리 (여백 유발 방지)
+        if (!titleVal && !creatorVal) {
             infoContainer.style.display = "none";
         } else {
             infoContainer.style.display = "flex";
         }
     }
-    // 형광펜 실시간 색상 동기화 호출
-    syncLiveHighlights();
+
+    // [오류 수정 및 안전 조치] 형광펜 실시간 색상 동기화 함수가 존재할 때만 안전하게 실행
+    if (typeof syncLiveHighlights === "function") {
+        try {
+            syncLiveHighlights();
+        } catch (e) {
+            console.warn("하이라이트 싱크 중 경고 발생:", e);
+        }
+    }
 }
 
 // ==========================================
@@ -294,21 +314,99 @@ function applySmartHighlighting(container) {
     });
 }
 
-// 형광펜 색상 실시간 전체 동기화 함수
-function syncLiveHighlights() {
+// 형광펜 색상 실시간 전체 동기화 엔진 (3채널 독립 변동 추적 스캔 스크립트)
+let lastHlColors = { A: "#fef08a", B: "#bbf7d0", C: "#bfdbfe" };
+let lastSubTextColor = "#64748b";
+
+function hexToRgb(hex) {
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    const fullHex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+    return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : "";
+}
+
+// 기존 syncLiveHighlights() 함수 전체를 아래 코드로 완전히 덮어씌워 주세요.
+function syncLiveHighlights(overrideColors = null) {
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (!textWrapper) return;
 
-    const spans = textWrapper.getElementsByTagName("span");
-    for (let span of spans) {
-        if (
-            span.style.backgroundColor &&
-            span.style.backgroundColor !== "transparent" &&
-            span.style.backgroundColor !== "initial"
-        ) {
-            span.style.backgroundColor = els.hlColor.value;
-        }
+    // 프리셋 로드 시 overrideColors 객체가 들어오면 그 값을 최신 피커 값으로 인정하고,
+    // 기존 추적용 oldRgb는 프리셋 적용 '직전'의 과거 값(lastHlColors)을 그대로 사용하여 본문 태그를 정상 추적합니다.
+    let baseA = lastHlColors.A;
+    let baseB = lastHlColors.B;
+    let baseC = lastHlColors.C;
+    let baseSub = lastSubTextColor;
+
+    if (overrideColors) {
+        // 프리셋에서 전달된 새 색상값들을 피커 요소에 먼저 강제 주입
+        if (overrideColors.hlColorA && els.hlColorA) els.hlColorA.value = overrideColors.hlColorA;
+        if (overrideColors.hlColorB && els.hlColorB) els.hlColorB.value = overrideColors.hlColorB;
+        if (overrideColors.hlColorC && els.hlColorC) els.hlColorC.value = overrideColors.hlColorC;
+        if (overrideColors.subTextColor && els.subTextColor) els.subTextColor.value = overrideColors.subTextColor;
     }
+
+    // 브라우저 렌더링 RGB 값과의 공백 무관 매칭을 위한 문자열 공백 가공 처리
+    const oldRgbA = hexToRgb(baseA).replace(/\s+/g, "");
+    const oldRgbB = hexToRgb(baseB).replace(/\s+/g, "");
+    const oldRgbC = hexToRgb(baseC).replace(/\s+/g, "");
+    const oldRgbSub = hexToRgb(baseSub).replace(/\s+/g, "");
+
+    const targetColorA = els.hlColorA ? els.hlColorA.value : baseA;
+    const targetColorB = els.hlColorB ? els.hlColorB.value : baseB;
+    const targetColorC = els.hlColorC ? els.hlColorC.value : baseC;
+    const targetColorSub = els.subTextColor ? els.subTextColor.value : baseSub;
+
+    const updateSpansColor = (container) => {
+        if (!container) return;
+
+        // 1. 일반 span 태그 스타일 추적 치환
+        const spans = container.getElementsByTagName("span");
+        for (let span of spans) {
+            // 형광펜 배경색 실시간 업데이트
+            const bg = span.style.backgroundColor;
+            if (bg && bg !== "transparent" && bg !== "initial") {
+                const normalizedBg = bg.replace(/\s+/g, "");
+                if (normalizedBg === oldRgbA) span.style.backgroundColor = targetColorA;
+                else if (normalizedBg === oldRgbB) span.style.backgroundColor = targetColorB;
+                else if (normalizedBg === oldRgbC) span.style.backgroundColor = targetColorC;
+            }
+
+            // 보조 글자색 실시간 업데이트
+            const fg = span.style.color;
+            if (fg && fg !== "transparent" && fg !== "initial") {
+                const normalizedFg = fg.replace(/\s+/g, "");
+                if (normalizedFg === oldRgbSub) {
+                    span.style.color = targetColorSub;
+                }
+            }
+        }
+
+        // 2. 브라우저 execCommand가 생성하는 font 태그 색상까지 추적 보정
+        const fonts = container.getElementsByTagName("font");
+        for (let font of fonts) {
+            const fontColor = font.color || font.style.color;
+            if (fontColor) {
+                const currentFontRgb = (fontColor.startsWith("#") ? hexToRgb(fontColor) : fontColor).replace(
+                    /\s+/g,
+                    ""
+                );
+                if (currentFontRgb === oldRgbSub) {
+                    font.color = targetColorSub;
+                    font.style.color = targetColorSub;
+                }
+            }
+        }
+    };
+
+    // 프리셋 로드 시 원본 에디터를 먼저 치환해야 updateCanvas()가 이를 복사하여 정상 렌더링함
+    updateSpansColor(els.editor);
+    updateSpansColor(textWrapper);
+
+    // 색상 변동 판단용 레코드 최신화
+    if (els.hlColorA) lastHlColors.A = els.hlColorA.value;
+    if (els.hlColorB) lastHlColors.B = els.hlColorB.value;
+    if (els.hlColorC) lastHlColors.C = els.hlColorC.value;
+    if (els.subTextColor) lastSubTextColor = els.subTextColor.value;
 }
 
 // ==========================================
@@ -322,10 +420,46 @@ document.getElementById("btnItalic").addEventListener("click", () => {
     document.execCommand("italic", false, null);
     updateCanvas();
 });
-document.getElementById("btnHighlight").addEventListener("click", () => {
-    document.execCommand("backColor", false, els.hlColor.value);
+
+// 1) 드래그 선택 영역 앞뒤 자동 따옴표 감싸기 엔진
+document.getElementById("btnQuoteWrap").addEventListener("click", () => {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+    // 브라우저 포커스 선택 역을 유지한 채 원자단위 데이터 교체 처리
+    document.execCommand("insertText", false, `“${selectedText}”`);
     updateCanvas();
 });
+
+// 기존 4번 영역의 btnSubText 이벤트를 아래 코드로 완전히 교체해주세요
+document.getElementById("btnSubText").addEventListener("click", () => {
+    const color = els.subTextColor ? els.subTextColor.value : "#64748b";
+    document.execCommand("foreColor", false, color);
+
+    // [핵심 추가] 글자에 색을 입힌 직후, 이전에 바뀐 상태의 히스토리와 현재 에디터 상태를 강제로 일치시킵니다.
+    if (typeof syncLiveHighlights === "function") {
+        syncLiveHighlights();
+    }
+
+    updateCanvas();
+});
+
+// 3) 드래그 선택 영역 3종 독립 채널 형광펜 드롭다운 멀티플렉서
+document.getElementById("selHighlight").addEventListener("change", function () {
+    const val = this.value;
+    if (!val) return;
+
+    let color = "#fef08a";
+    if (val === "A") color = els.hlColorA.value;
+    if (val === "B") color = els.hlColorB.value;
+    if (val === "C") color = els.hlColorC.value;
+
+    document.execCommand("backColor", false, color);
+    this.value = ""; // 제어 명령 하달 직후 드롭다운 마크를 초기 상태로 리셋 공정
+    updateCanvas();
+});
+
 document.getElementById("btnQuoteLine").addEventListener("click", () => {
     let selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -435,7 +569,10 @@ document.addEventListener("DOMContentLoaded", () => {
         els.gradColor3,
         els.gradientDir,
         els.globalTextColor,
-        els.hlColor,
+        els.subTextColor,
+        els.hlColorA,
+        els.hlColorB,
+        els.hlColorC,
         els.quoteLineColor,
         els.enableQuoteColor,
         els.quoteColor,

@@ -31,7 +31,16 @@
                     <div class="editor-toolbar pill-group">
                         <button id="btnBold" title="굵게">B</button>
                         <button id="btnItalic" title="기울임">I</button>
-                        <button id="btnHighlight" title="형광펜 칠하기">형광펜</button>
+                        <button id="btnQuoteWrap" title="따옴표 감싸기">“”</button>
+                        <button id="btnSubText" title="보조 글자색 적용">보조색</button>
+
+                        <select id="selHighlight" class="toolbar-select" title="형광펜 칠하기">
+                            <option value="" disabled selected>형광펜</option>
+                            <option value="A">형광펜 A</option>
+                            <option value="B">형광펜 B</option>
+                            <option value="C">형광펜 C</option>
+                        </select>
+
                         <button id="btnQuoteLine" class="btn-dialogue-line" title="대사 강조선 바">강조선</button>
                         <button id="btnClearHighlight" title="선택 효과 지우기" class="text-danger">지우기</button>
                     </div>
@@ -337,8 +346,20 @@
                             <span>글자색</span>
                         </div>
                         <div class="picker-cell">
-                            <input type="color" id="hlColor" value="#fef08a" />
-                            <span>형광펜</span>
+                            <input type="color" id="subTextColor" value="#64748b" />
+                            <span>보조색</span>
+                        </div>
+                        <div class="picker-cell">
+                            <input type="color" id="hlColorA" value="#fef08a" />
+                            <span>형광펜 A</span>
+                        </div>
+                        <div class="picker-cell">
+                            <input type="color" id="hlColorB" value="#bbf7d0" />
+                            <span>형광펜 B</span>
+                        </div>
+                        <div class="picker-cell">
+                            <input type="color" id="hlColorC" value="#bfdbfe" />
+                            <span>형광펜 C</span>
                         </div>
                         <div class="picker-cell">
                             <input type="color" id="quoteLineColor" value="#2563eb" />

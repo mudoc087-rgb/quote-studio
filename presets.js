@@ -93,7 +93,7 @@ function renderPresets() {
     });
 }
 
-// 현재 세팅을 프리셋으로 저장 (HTML 인라인 명칭 대응 바인딩 완료)
+// 현재 세팅을 프리셋으로 저장 (보조색 및 멀티 형광펜 타겟 반영 완료)
 window.savePreset = function () {
     const nameInput = document.getElementById("presetNameInput");
     const name = nameInput.value.trim();
@@ -115,7 +115,13 @@ window.savePreset = function () {
         "gradColor3",
         "gradientDir",
         "globalTextColor",
-        "hlColor",
+
+        // [업데이트] 단일 hlColor 대신 보조색 및 독립형 형광펜 3종 등록
+        "subTextColor",
+        "hlColorA",
+        "hlColorB",
+        "hlColorC",
+
         "quoteLineColor",
         "enableQuoteColor",
         "quoteColor",
@@ -163,6 +169,7 @@ function applyPreset(name) {
     const data = presets[name];
     if (!data) return;
 
+    // 1. 저장되어 있던 일반 설정값들을 DOM 인풋 요소들에 먼저 복원
     Object.keys(data).forEach((id) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -175,14 +182,14 @@ function applyPreset(name) {
     });
 
     if (data["gradMode"]) {
-        const radio = document.querySelector(`input[name="gradMode"][value="${data["gradMode"]}"]`);
+        const radio = document.querySelector(`input[name=\"gradMode\"][value=\"${data["gradMode"]}\"]`);
         if (radio) radio.checked = true;
     }
 
     // 세그먼트 가로 버튼 정렬 활성화 클래스 상태 복원
     const alignVal = data["alignH"];
     if (alignVal) {
-        const segControl = document.querySelector(`.segmented-control[data-target="alignH"]`);
+        const segControl = document.querySelector(`.segmented-control[data-target=\"alignH\"]`);
         if (segControl) {
             segControl.querySelectorAll("button").forEach((b) => {
                 if (b.getAttribute("data-value") === alignVal) {
@@ -193,6 +200,15 @@ function applyPreset(name) {
             });
         }
     }
+
+    // ==========================================
+    // [핵심 보정 완료] script.js의 완벽해진 실시간 싱크 함수로 토스
+    // 변수만 대입하는 과거 코드 대신 데이터 구조를 통째로 넘겨 본문 글자색을 먼저 강제 치환합니다.
+    // ==========================================
+    if (typeof syncLiveHighlights === "function") {
+        syncLiveHighlights(data);
+    }
+    // ==========================================
 
     if (typeof updateCanvas === "function") {
         updateCanvas();

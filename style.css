@@ -262,30 +262,43 @@ body.minimal-theme {
     text-align: justify !important;
 }
 
-/* 타이틀/제작자 컨테이너 - 본문 바로 아래 완벽 고정 */
+/* ==========================================
+   문학 에디토리얼 스타일 출처란 디자인 (회색 박스 완전 제거)
+   ========================================== */
 .info-area {
-    width: 100%;
     display: flex;
-    gap: 6px; /* 칩끼리 벌어지지 않게 쫀쫀하게 고정 */
     align-items: center;
-    line-height: 1 !important; /* 본문 행간 상속 차단 */
-    box-sizing: border-box;
-    margin-top: 40px;
-}
-
-/* 감성 에디토리얼 미니멀 태그 칩 (테두리 제거, 스퀘어 라운딩) */
-.info-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px; /* 조밀하고 슬림한 여백 */
-    border-radius: 4px; /* 유치한 알약 모양 탈피, 시크한 직사각형 라운딩 */
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    border: none !important; /* 조잡한 테두리 완전 제거 */
+    gap: 5px;
+    margin-top: 24px; /* 본문과의 우아한 거리감 확보 */
     transition: all 0.2s ease;
 }
 
+/* 대시 기호 스타일 */
+.info-dash {
+    font-weight: 300;
+    opacity: 0.65;
+}
+
+/* 텍스트 요소 공동 스타일 (박스 배경 완전 제거) */
+.info-text-node {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    border: none !important;
+    background: transparent !important;
+}
+
+/* 타이틀과 제작자 사이를 나누는 미니멀 도트 기호 */
+.info-divider {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    margin: 0 4px;
+    opacity: 0.35;
+}
 /* 3. 본문 내용 문구 플로팅 카드 (Floating Editor Card) */
 .floating-editor-card {
     position: relative;
@@ -323,7 +336,6 @@ body.minimal-theme {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-pill);
     padding: 3px;
-    gap: 2px;
 }
 
 .editor-toolbar.pill-group button {
@@ -347,7 +359,67 @@ body.minimal-theme {
     background-color: rgba(239, 68, 68, 0.08);
     color: var(--danger-color);
 }
+/* ==========================================
+   에디터 툴바 레이아웃 깨짐 방지 및 한 줄 고정
+   ========================================== */
 
+/* 1. 툴바 내부 요소들이 절대 밑으로 떨어지지 않도록 강제 */
+.editor-toolbar.pill-group {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    flex-wrap: nowrap; /* 절대 한 줄로만 배치 (줄바꿈 원천 차단) */
+    width: max-content; /* 내부 콘텐츠 총합 너비만큼 툴바가 자동으로 확장 */
+    max-width: 100%; /* 부모 영역을 넘지 않도록 제한 */
+}
+
+/* 2. 내부 버튼 및 드롭다운 글자가 찌그러지거나 잘리는 현상 방지 */
+.editor-toolbar.pill-group button,
+.editor-toolbar.pill-group .toolbar-select {
+    white-space: nowrap; /* 버튼 안의 텍스트가 강제로 줄바꿈되는 것 방지 */
+    flex-shrink: 0; /* 공간이 좁아져도 크기가 압착되지 않도록 고정 */
+}
+
+/* 3. 미니멀 드롭다운 최종 자수성가 스타일 (여백 및 화살표 완벽 최적화) */
+.editor-toolbar.pill-group .toolbar-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    background: none;
+    border: none;
+    padding: 6px 20px 6px 10px; /* 불필요하게 넓었던 좌우 패딩을 미세하게 다이어트 */
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    height: auto;
+    outline: none;
+    transition: var(--transition-base);
+
+    /* 은은하고 미니멀한 다운 화살표 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center; /* 화살표 위치도 우측 끝으로 밀착 */
+    background-size: 9px;
+}
+
+/* 드롭다운 호버 스타일 */
+.editor-toolbar.pill-group .toolbar-select:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--text-main);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230f172a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+}
+
+/* 옵션 팝업창 내부 스타일 정의 */
+.editor-toolbar.pill-group .toolbar-select option {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
 #textEditor {
     width: 100%;
     min-height: 120px;
@@ -871,7 +943,7 @@ input[type="file"]::file-selector-button:hover {
 /* [교체] 대사 강조선 컴포넌트 실시간 테두리 노출 보장 */
 .dialogue-line {
     display: block !important;
-    border-left: 4px solid var(--quote-line-color, #000000) !important; /* 형태와 컬러 매핑 필수 추가 */
+    border-left: 3px solid var(--quote-line-color, #000000) !important; /* 형태와 컬러 매핑 필수 추가 */
     padding-left: 12px !important;
     margin-bottom: inherit;
     text-align: inherit;
