@@ -172,23 +172,23 @@ function updateCanvas() {
 
             if (titleVal && creatorVal) {
                 infoHTML += `
-                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${titleVal}
-                    </span>
-                    <span class="info-divider" style="background-color: ${baseColor};"></span>
-                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${creatorVal}
-                    </span>`;
+                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${titleVal}
+                    </span>
+                    <span class="info-divider" style="background-color: ${baseColor};"></span>
+                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${creatorVal}
+                    </span>`;
             } else if (titleVal) {
                 infoHTML += `
-                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${titleVal}
-                    </span>`;
+                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${titleVal}
+                    </span>`;
             } else if (creatorVal) {
                 infoHTML += `
-                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${creatorVal}
-                    </span>`;
+                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
+                        ${creatorVal}
+                    </span>`;
             }
         }
 
@@ -387,9 +387,8 @@ function prepareCanvasForCapture(container) {
         const bg = span.style.backgroundColor;
         if (bg && bg !== "transparent" && bg !== "initial") {
             // 원본 글자 정보 백업
-            span.setAttribute("data-original-html", span.innerHTML);
+            span.setAttribute("data-original-html", span.innerHTML); // 글자 단위로 쪼개어 각각 동일한 배경색 적용 (html2canvas 우회 트릭)
 
-            // 글자 단위로 쪼개어 각각 동일한 배경색 적용 (html2canvas 우회 트릭)
             const chars = Array.from(span.textContent);
             const wrappedHTML = chars
                 .map((char) => {
@@ -609,9 +608,8 @@ document.getElementById("btnCopy").addEventListener("click", () => {
     const originalHeight = els.captureArea.style.height;
     if (els.ratioSelect.value === "free") {
         els.captureArea.style.height = els.captureArea.scrollHeight + "px";
-    }
+    } // 캡처 직전 형광펜 조각내기
 
-    // 캡처 직전 형광펜 조각내기
     prepareCanvasForCapture(els.captureArea);
 
     html2canvas(els.captureArea, { useCORS: true, allowTaint: true, backgroundColor: null, scale: 2 })
@@ -649,9 +647,8 @@ document.getElementById("btnSave").addEventListener("click", () => {
     const originalHeight = els.captureArea.style.height;
     if (els.ratioSelect.value === "free") {
         els.captureArea.style.height = els.captureArea.scrollHeight + "px";
-    }
+    } // 캡처 직전 형광펜 조각내기
 
-    // 캡처 직전 형광펜 조각내기
     prepareCanvasForCapture(els.captureArea);
 
     html2canvas(els.captureArea, { useCORS: true, allowTaint: true, backgroundColor: null, scale: 2 })
