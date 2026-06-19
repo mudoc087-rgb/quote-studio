@@ -168,27 +168,18 @@ function updateCanvas() {
         let infoHTML = "";
 
         if (titleVal || creatorVal) {
-            infoHTML += `<span class="info-dash" style="color: ${baseColor}; font-size: ${computedFontSize}px;">｜</span>`;
+            // 세로줄 뒤에 약간의 마진만 줍니다.
+            infoHTML += `<span class="info-dash" style="color: ${baseColor}; font-size: ${computedFontSize}px; margin-right: 6px;">｜</span>`;
 
             if (titleVal && creatorVal) {
-                infoHTML += `
-                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${titleVal}
-                    </span>
-                    <span class="info-divider" style="background-color: ${baseColor};"></span>
-                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${creatorVal}
-                    </span>`;
+                infoHTML +=
+                    `<span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">${titleVal}</span>` +
+                    `<span class="info-divider" style="color: ${baseColor}; font-size: ${computedFontSize}px; margin: 0 6px;">•</span>` +
+                    `<span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">${creatorVal}</span>`;
             } else if (titleVal) {
-                infoHTML += `
-                    <span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${titleVal}
-                    </span>`;
+                infoHTML += `<span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">${titleVal}</span>`;
             } else if (creatorVal) {
-                infoHTML += `
-                    <span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">
-                        ${creatorVal}
-                    </span>`;
+                infoHTML += `<span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">${creatorVal}</span>`;
             }
         }
 
