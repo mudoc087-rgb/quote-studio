@@ -154,7 +154,7 @@ function updateCanvas() {
         });
         if (els.enableTextShadow && els.enableTextShadow.checked) {
             const shadowColor = els.textShadowColor ? els.textShadowColor.value : "rgba(0,0,0,0.3)";
-            const shadowBlur = els.textShadowBlur ? els.textShadowBlur.value : 3;
+            const shadowBlur = els.textShadowBlur ? els.textShadowBlur.value : 5;
 
             textWrapper.style.textShadow = `1px 1px ${shadowBlur}px ${shadowColor}`;
         } else {
