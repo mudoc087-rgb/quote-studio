@@ -154,7 +154,7 @@ body.minimal-theme {
     top: 30px;
     left: 30px;
     bottom: 30px;
-    width: 380px;
+    width: 430px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -251,7 +251,7 @@ body.minimal-theme {
     align-items: center;
     justify-content: center;
     gap: 0;
-    margin-top: 40px;
+    margin-top: 24px;
     transition: all 0.2s ease;
 }
 
@@ -278,7 +278,6 @@ body.minimal-theme {
     width: auto;
     height: auto;
     border-radius: 0;
-    margin: 0 8px;
     opacity: 0.5;
     line-height: 1;
     vertical-align: middle;
@@ -704,29 +703,59 @@ body.minimal-theme {
 .control-minimal-row input[type="range"]::-webkit-slider-thumb:hover {
     transform: scale(1.2);
 }
+/* ==========================================================================
+   신규 확장 스타일: 가로 3열 피커 정렬 및 효과선 스타일
+   ========================================================================== */
 
-.picker-minimal-group {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    width: 100%;
+/* 색상 피커 그룹을 3열 구조로 강제 고정하는 스타일 디자인 */
+.picker-minimal-group.type-3-columns {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 무조건 한 줄에 3개 배분 */
+    gap: 8px !important;
+    width: 100% !important;
 }
 
+/* 3열 내부에서 셀 크기가 밀리거나 깨지지 않도록 자동 최소너비 초기화 */
+.picker-minimal-group.type-3-columns .picker-cell {
+    min-width: 0 !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+}
+
+/* 그라데이션 페이드 가로 구분선 디자인 (html2canvas 캡처 완벽 호환 규격) */
+.fade-divider-line {
+    display: block;
+    width: 80%;
+    height: 1px;
+    margin: 16px auto;
+    border: none;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(100, 100, 100, 0.6) 50%, rgba(0, 0, 0, 0) 100%);
+    pointer-events: none; /* 에디터 내부 본문 조작 시 마우스 턱 걸림 방지 */
+}
+
+#canvasTextWrapper .fade-divider-line {
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(100, 100, 100, 0.6) 50%,
+        rgba(0, 0, 0, 0) 100%
+    ) !important;
+}
 .picker-cell {
     display: flex;
     align-items: center;
     gap: 8px;
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
-    padding: 6px 10px;
+    padding: 2px 5px;
     border-radius: var(--radius-sm);
 }
 
 .picker-cell input[type="color"] {
     -webkit-appearance: none;
     border: none;
-    width: 24px;
-    height: 20px;
+    width: 35px;
+    height: 25px;
     border-radius: 4px;
     cursor: pointer;
     background: none;
@@ -755,7 +784,7 @@ body.minimal-theme {
 .checkbox-minimal-group label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -922,55 +951,6 @@ input[type="file"]::file-selector-button:hover {
     box-sizing: border-box;
 }
 
-.gradient-picker-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
-}
-
-.gradient-picker-container .picker-cell {
-    display: flex !important;
-    flex: 1 1 calc(50% - 4px);
-    min-width: 130px;
-    align-items: center;
-    justify-content: flex-start;
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 8px 12px;
-    gap: 10px;
-    box-sizing: border-box;
-}
-
-#grad3Wrapper {
-    flex: 1 1 100%;
-}
-
-.gradient-picker-container input[type="color"] {
-    -webkit-appearance: none;
-    border: none;
-    width: 28px !important;
-    height: 24px !important;
-    border-radius: 4px;
-    cursor: pointer;
-    background: transparent;
-    padding: 0;
-    flex-shrink: 0;
-}
-
-.gradient-picker-container input[type="color"]::-webkit-color-swatch {
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-}
-
-.gradient-picker-container .picker-cell span {
-    font-size: 12px !important;
-    font-weight: 500;
-    color: var(--text-main);
-    white-space: nowrap;
-}
-
 .radio-minimal-group {
     display: flex;
     gap: 14px;
@@ -991,6 +971,24 @@ input[type="file"]::file-selector-button:hover {
     margin: 0;
     width: 14px;
     height: 14px;
+}
+/* 기존 무조건 채우기 속성을 제거하고 깔끔한 3열 배치 레이아웃 정의 */
+.gradient-picker-container.type-3-columns {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100%;
+}
+
+/* display: none 상태일 때 grid 셀이 공간을 차지하지 않도록 강제 차단 */
+.gradient-picker-container.type-3-columns .picker-cell[style*="display: none"] {
+    display: none !important;
+}
+
+/* 기존 CSS에 있던 #grad3Wrapper { flex: 1 1 100%; } 가 있다면 찾아서 지우거나, 
+   아래 코드로 덮어씌워 무력화 시킵니다. */
+#grad3Wrapper {
+    flex: none !important;
 }
 /* ==========================================================================
    형광펜 처리된 글자 및 인접 텍스트 글자 잘림/파묻힘 방지 패치 (최종 안정화)

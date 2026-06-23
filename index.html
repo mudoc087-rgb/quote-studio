@@ -27,14 +27,13 @@
         <div class="left-floating-sidebar">
             <section class="floating-editor-card">
                 <div class="editor-header">
-                    <span class="card-title">본문</span>
                     <div class="editor-toolbar pill-group">
                         <button id="btnBold" title="굵게">B</button>
                         <button id="btnItalic" title="기울임">I</button>
                         <button id="btnQuoteWrap" title="따옴표 감싸기">“”</button>
                         <button id="btnSubText" title="보조 글자색 적용">보조색</button>
 
-                        <select id="selHighlight" class="toolbar-select" title="형광펜 칠하기">
+                        <select id="selHighlight" class="toolbar-select" title="형광펜">
                             <option value="" disabled selected>형광펜</option>
                             <option value="A">형광펜 A</option>
                             <option value="B">형광펜 B</option>
@@ -42,6 +41,7 @@
                         </select>
 
                         <button id="btnQuoteLine" class="btn-dialogue-line" title="대사 강조선 바">강조선</button>
+                        <button id="btnFadeLine" title="구분선">구분선</button>
                         <button id="btnClearHighlight" title="선택 효과 지우기" class="text-danger">지우기</button>
                     </div>
                 </div>
@@ -174,54 +174,39 @@
                         </div>
                     </div>
 
-                    <div class="panel-section-title">배경 커스텀</div>
-                    <div class="control-minimal-row">
-                        <label for="bgType">배경 타입</label>
-                        <select id="bgType">
-                            <option value="solid" selected>단색 (Solid)</option>
-                            <option value="gradient">그라데이션 (Gradient)</option>
+                    <div class="control-row-minimal">
+                        <div class="control-minimal-row">
+                            <label for="bgType">배경 타입</label>
+                            <select id="bgType">
+                                <option value="color">단색</option>
+                                <option value="grad2">2색 그라데이션</option>
+                                <option value="grad3">3색 그라데이션</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-minimal-row" id="gradientDirWrapper" style="display: none; margin-bottom: 10px">
+                        <label for="gradientDir">방향</label>
+                        <select id="gradientDir">
+                            <option value="to right">가로</option>
+                            <option value="to bottom" selected>세로</option>
+                            <option value="to bottom right">대각선</option>
                         </select>
                     </div>
-                    <div id="solidColorArea" class="picker-minimal-group">
-                        <div class="picker-cell">
-                            <input type="color" id="bgColor1" value="#ffffff" />
-                            <span>배경 색상</span>
+                    <div
+                        class="gradient-picker-container type-3-columns"
+                        id="gradientPickerContainer"
+                        style="margin-bottom: 10px">
+                        <div class="picker-cell" id="grad1Wrapper">
+                            <input type="color" id="gradColor1" value="#ffffff" />
+                            <span id="gradColor1Label">배경색 A</span>
                         </div>
-                    </div>
-                    <div id="gradientColorArea" class="gradient-config-box">
-                        <div class="control-minimal-row">
-                            <label>그라데이션 모드</label>
-                            <div class="radio-minimal-group">
-                                <label><input type="radio" name="gradMode" value="2" checked /> 2색</label>
-                                <label><input type="radio" name="gradMode" value="3" /> 3색</label>
-                            </div>
+                        <div class="picker-cell" id="grad2Wrapper">
+                            <input type="color" id="gradColor2" value="#e2e8f0" />
+                            <span>배경색 B</span>
                         </div>
-
-                        <div id="gradientSettingsArea">
-                            <div class="gradient-picker-container">
-                                <div class="picker-cell">
-                                    <input type="color" id="gradColor1" value="#fbc2eb" />
-                                    <span>색상 A</span>
-                                </div>
-                                <div class="picker-cell">
-                                    <input type="color" id="gradColor2" value="#a6c1ee" />
-                                    <span>색상 B</span>
-                                </div>
-                                <div class="picker-cell" id="grad3Wrapper">
-                                    <input type="color" id="gradColor3" value="#fad0c4" />
-                                    <span>색상 C</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="control-minimal-row">
-                            <label>방향 선택</label>
-                            <select id="gradientDir">
-                                <option value="to right">▶ 가로</option>
-                                <option value="to bottom" selected>▼ 세로</option>
-                                <option value="135deg">빗각 (135°)</option>
-                                <option value="45deg">빗각 (45°)</option>
-                            </select>
+                        <div class="picker-cell" id="grad3Wrapper">
+                            <input type="color" id="gradColor3" value="#cbd5e1" />
+                            <span>배경색 C</span>
                         </div>
                     </div>
                     <div id="bgImageControls" class="image-upload-config-box">
@@ -340,7 +325,7 @@
 
                 <div class="tab-panel" id="panel-effect">
                     <div class="panel-section-title">색상 변경</div>
-                    <div class="picker-minimal-group">
+                    <div class="picker-minimal-group type-3-columns">
                         <div class="picker-cell">
                             <input type="color" id="globalTextColor" value="#1e293b" />
                             <span>글자색</span>
@@ -369,12 +354,13 @@
 
                     <div class="panel-section-title">스마트 하이라이트</div>
                     <div class="control-minimal-row">
-                        <div class="checkbox-minimal-group">
+                        <div class="checkbox-minimal-group" style="display: flex; flex-wrap: wrap; gap: 10px 14px">
                             <label><input type="checkbox" id="enableQuoteColor" checked /> 따옴표 감지</label>
                             <label><input type="checkbox" id="enableParenColor" checked /> 괄호 감지</label>
+                            <label><input type="checkbox" id="enableTextShadow" /> 글자 그림자</label>
                         </div>
                     </div>
-                    <div class="picker-minimal-group">
+                    <div class="picker-minimal-group type-3-columns">
                         <div class="picker-cell">
                             <input type="color" id="quoteColor" value="#2563eb" />
                             <span>따옴표색</span>
@@ -382,6 +368,10 @@
                         <div class="picker-cell" id="parenColorWrapper">
                             <input type="color" id="parenColor" value="#ea580c" />
                             <span>괄호색</span>
+                        </div>
+                        <div class="picker-cell">
+                            <input type="color" id="textShadowColor" value="#000000" />
+                            <span>그림자색</span>
                         </div>
                     </div>
                 </div>
