@@ -1020,3 +1020,10 @@ input[type="file"]::file-selector-button:hover {
     position: relative;
     z-index: 2; /* 형광펜이 없는 일반 글자를 한 단계 위로 올려 절대 파묻히지 않게 원천 차단 */
 }
+
+/* 에디터와 캔버스 내부 첫 줄의 상단 여백 강제 제거 */
+#textEditor > *:first-child,
+#canvasTextWrapper > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
