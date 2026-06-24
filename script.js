@@ -191,8 +191,9 @@ function updateCanvas() {
             p.style.marginBottom = `${els.paraSpacing.value}px`;
         }
     });
-
+    // ========================================================
     // 4. 정보 영역(작품명/작가명) 및 가로 그라데이션 구분선 처리
+    // ========================================================
     const infoContainer = document.getElementById("canvasInfo");
     const textContainer = document.getElementById("canvasTextContainer");
 
@@ -208,10 +209,11 @@ function updateCanvas() {
         } else {
             infoContainer.style.justifyContent = "flex-start";
         }
-
         const baseColor = els.globalTextColor.value;
         const fontName = els.fontSelect.value;
-        const computedFontSize = Math.max(12, parseFloat(els.fontSize.value) * 0.65);
+
+        // 🌟 [핵심 수정] 고정 단위 "0.7em" 대신 본문 크기(els.fontSize.value)의 70% 값을 실시간 px로 계산합니다.
+        const computedFontSize = `${parseFloat(els.fontSize.value) * 0.7}px`;
 
         const titleVal = els.titleInput.value.trim();
         const creatorVal = els.creatorInput.value.trim();
@@ -219,18 +221,18 @@ function updateCanvas() {
 
         if (titleVal || creatorVal) {
             infoHTML += `<div style="display: flex; align-items: center; gap: 6px;">`;
-            infoHTML += `<span style="color: ${baseColor}; opacity: 0.5; font-size: ${computedFontSize}px;">｜</span>`;
+            // 뒤에 붙어있던 불필요한 px 문자는 연산 단계에서 처리했으므로 깨끗하게 매핑됩니다.
+            infoHTML += `<span style="color: ${baseColor}; opacity: 0.5; font-size: ${computedFontSize};">｜</span>`;
 
             if (titleVal && creatorVal) {
                 infoHTML +=
-                    `<span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">${titleVal}</span>` +
-                    // 구분을 위한 가운뎃점(·)
-                    `<span class="info-divider" style="color: ${baseColor}; font-size: ${computedFontSize}px; opacity: 0.5;">·</span>` +
-                    `<span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">${creatorVal}</span>`;
+                    `<span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize};">${titleVal}</span>` +
+                    `<span class="info-divider" style="color: ${baseColor}; font-size: ${computedFontSize}; opacity: 0.5;">·</span>` +
+                    `<span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize};">${creatorVal}</span>`;
             } else if (titleVal) {
-                infoHTML += `<span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize}px;">${titleVal}</span>`;
+                infoHTML += `<span class="info-text-node" style="color: ${baseColor}; font-family: ${fontName}; font-size: ${computedFontSize};">${titleVal}</span>`;
             } else if (creatorVal) {
-                infoHTML += `<span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize}px;">${creatorVal}</span>`;
+                infoHTML += `<span class="info-text-node" style="color: ${baseColor}; opacity: 0.7; font-family: ${fontName}; font-size: ${computedFontSize};">${creatorVal}</span>`;
             }
 
             infoHTML += `</div>`;
