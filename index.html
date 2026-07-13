@@ -160,7 +160,7 @@
 
                                 <div class="panel-divider"></div>
 
-                                <div class="field-row cols-2">
+                                <div class="field-row cols-3">
                                     <div class="field-col">
                                         <label for="titleInput">작품명</label>
                                         <input type="text" id="titleInput" placeholder="예: 작품명" />
@@ -169,6 +169,13 @@
                                         <label for="creatorInput">제작자</label>
                                         <input type="text" id="creatorInput" placeholder="예: 제작자" />
                                     </div>
+                                    <div class="field-col">
+        <label for="infoMarginTop">여백 (px)</label>
+        <div class="stepper-minimal">
+            <button type="button" onclick="stepInput('infoMarginTop', -5)">-</button>
+            <input type="number" id="infoMarginTop" value="35" />
+            <button type="button" onclick="stepInput('infoMarginTop', 5)">+</button>
+        </div>
                                 </div>
                             </div>
                         </details>
@@ -296,7 +303,7 @@
                                                 type="range"
                                                 id="bgOverlayOpacity"
                                                 min="0"
-                                                max="10"
+                                                max="1"
                                                 step="0.05"
                                                 value="0" />
                                         </div>
