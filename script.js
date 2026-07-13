@@ -12,6 +12,7 @@ const els = {
 
     titleInput: document.getElementById("titleInput"),
     creatorInput: document.getElementById("creatorInput"),
+    infoMarginTop: document.getElementById("infoMarginTop"),
 
     ratioSelect: document.getElementById("ratioSelect"),
     canvasWidth: document.getElementById("canvasWidth"),
@@ -354,6 +355,9 @@ function updateCanvas() {
         if (infoContainer.parentNode !== textContainer) {
             textContainer.appendChild(infoContainer);
         }
+        const infoMarginVal = els.infoMarginTop ? els.infoMarginTop.value : 35;
+
+        infoContainer.style.marginTop = `${infoMarginVal}px`;
 
         if (els.alignH.value === "center") {
             infoContainer.style.justifyContent = "center";
@@ -1357,6 +1361,7 @@ document.addEventListener("DOMContentLoaded", () => {
         els.subtitleWeight,
         els.titleInput,
         els.creatorInput,
+        els.infoMarginTop,
         els.canvasWidth,
         els.paddingY,
         els.paddingX,
