@@ -262,6 +262,23 @@ function updateCanvas() {
         let rawHTML = els.editor.innerHTML || "<div><br></div>";
         textWrapper.innerHTML = rawHTML;
 
+        const canvasSpeakers = textWrapper.querySelectorAll(".bubble-speaker");
+        canvasSpeakers.forEach((speaker) => {
+            // 텍스트가 없거나, 공백만 있거나, placeholder용 '이름' 그대로인 경우 빈 값 처리
+            if (!speaker.textContent.trim() || speaker.textContent.trim() === "이름") {
+                speaker.textContent = "";
+
+                // 🔥 [수정 1] 주석을 해제하여 DOM에서 보이지 않도록 확실하게 숨깁니다.
+                speaker.style.display = "none";
+
+                // 🔥 [수정 2] 부모 버블 전체가 렌더링 찌꺼기로 남지 않도록 부모 요소도 숨김 처리합니다.
+                const parentBubble = speaker.closest(".chat-bubble");
+                if (parentBubble) {
+                    parentBubble.style.display = "none";
+                }
+            }
+        });
+
         normalizeParagraphs(textWrapper);
 
         textWrapper.style.setProperty("--quote-line-color-a", els.quoteLineColorA.value);
