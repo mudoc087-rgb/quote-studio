@@ -60,7 +60,9 @@ const els = {
 
     enableTextShadow: document.getElementById("enableTextShadow"),
     textShadowColor: document.getElementById("textShadowColor"),
-    textShadowBlur: document.getElementById("textShadowBlur")
+    textShadowBlur: document.getElementById("textShadowBlur"),
+
+    autoParenBreak: document.getElementById("autoParenBreak")
 };
 
 function applyBubbleColors(container) {
@@ -69,20 +71,25 @@ function applyBubbleColors(container) {
     bubbles.forEach((b) => {
         const inner = b.querySelector(".bubble-inner") || b;
         const isRight = b.classList.contains("side-right");
+        const textNode = b.querySelector(".bubble-text") || inner;
+        textNode.style.wordBreak = els.wordBreak ? els.wordBreak.value : "keep-all";
+        const leftBg = els.bubbleColorLeft ? els.bubbleColorLeft.value : "#f5f9ff";
+        const leftText = els.bubbleTextColorLeft ? els.bubbleTextColorLeft.value : "#252442";
+        const rightBg = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
+        const rightText = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
+
         if (isRight) {
-            inner.style.background = els.bubbleColorRight ? els.bubbleColorRight.value : "#3e5c55";
-            inner.style.color = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#f7f5ef";
+            inner.style.backgroundColor = rightBg;
+            textNode.style.color = rightText;
         } else {
-            inner.style.background = els.bubbleColorLeft ? els.bubbleColorLeft.value : "#efece4";
-            inner.style.color = els.bubbleTextColorLeft ? els.bubbleTextColorLeft.value : "#2b2a26";
+            inner.style.backgroundColor = leftBg;
+            textNode.style.color = leftText;
         }
     });
 }
 
-// 본문 내 삽입형 블록(제목/부제목/박스) 스타일 실시간 동기화
 function applyInlineContentBlocks(container) {
     if (!container) return;
-    // 🆕 본문 텍스트 스타일(크기/색상 제외)을 제목/부제목에도 동일하게 적용
     const applyBodyStyleExceptSizeColor = (el) => {
         el.style.textAlign = els.alignH.value;
         el.style.letterSpacing = `${els.letterSpacing.value}px`;
@@ -121,7 +128,6 @@ function applyInlineContentBlocks(container) {
     });
 }
 
-// 🆕 장평(가로 스케일) 적용 공용 함수 — 본문/제목/부제목 모두 동일한 로직 사용
 function applyHorizontalScale(el, scaleFactor, alignValue) {
     el.style.width = `${100 / scaleFactor}%`;
     el.style.transform = `scaleX(${scaleFactor})`;
@@ -148,7 +154,6 @@ function syncTextBlock(inputEl, wrapperEl, sizeEl, weightEl, fallbackColor) {
     wrapperEl.style.textAlign = els.alignH.value;
     wrapperEl.style.color = fallbackColor;
 
-    // 🆕 자간/장평/줄바꿈/텍스트 그림자도 본문 설정과 동일하게 동기화 (크기·색상 제외)
     wrapperEl.style.letterSpacing = `${els.letterSpacing.value}px`;
     wrapperEl.style.wordBreak = els.wordBreak.value;
 
@@ -169,7 +174,6 @@ function syncTextBlock(inputEl, wrapperEl, sizeEl, weightEl, fallbackColor) {
 function updateCanvas() {
     if (!els.captureArea) return;
 
-    // 1. 캔버스 비율 및 크기 설정
     const ratio = els.ratioSelect.value;
     els.captureArea.style.width = "";
     els.captureArea.style.height = "";
@@ -193,7 +197,6 @@ function updateCanvas() {
 
     els.captureArea.style.padding = `${els.paddingY.value}px ${els.paddingX.value}px`;
 
-    // 2. 캔버스 배경 처리
     const bgTypeVal = els.bgType.value;
     const grad1Wrapper = document.getElementById("grad1Wrapper");
     const grad2Wrapper = document.getElementById("grad2Wrapper");
@@ -231,7 +234,6 @@ function updateCanvas() {
 
         els.captureArea.style.background = `linear-gradient(${dirVal}, ${els.gradColor1.value}, ${els.gradColor2.value}, ${els.gradColor3.value})`;
     } else {
-        // 이미지 배경
         if (grad1Wrapper) grad1Wrapper.style.display = "flex";
         if (grad2Wrapper) grad2Wrapper.style.display = "none";
         if (grad3Wrapper) grad3Wrapper.style.display = "none";
@@ -240,7 +242,6 @@ function updateCanvas() {
         els.captureArea.style.background = els.gradColor1.value;
     }
 
-    // 3. 제목 / 부제목 동기화
     syncTextBlock(
         els.cardTitleInput,
         els.canvasTitleWrapper,
@@ -256,22 +257,30 @@ function updateCanvas() {
         els.subTextColor.value
     );
 
-    // 4. 에디터 텍스트 동기화 및 스타일 바인딩
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (textWrapper) {
         let rawHTML = els.editor.innerHTML || "<div><br></div>";
         textWrapper.innerHTML = rawHTML;
 
+        const canvasBubbles = textWrapper.querySelectorAll(".chat-bubble");
+        canvasBubbles.forEach((bubble) => {
+            const memberId = bubble.getAttribute("data-member-id");
+            const member = chatMembers.find((m) => m.id == memberId);
+            if (member) {
+                const speaker = bubble.querySelector(".bubble-speaker");
+                if (speaker) {
+                    speaker.textContent = member.name;
+
+                    speaker.style.color = member.color;
+                }
+            }
+        });
+
         const canvasSpeakers = textWrapper.querySelectorAll(".bubble-speaker");
         canvasSpeakers.forEach((speaker) => {
-            // 텍스트가 없거나, 공백만 있거나, placeholder용 '이름' 그대로인 경우 빈 값 처리
             if (!speaker.textContent.trim() || speaker.textContent.trim() === "이름") {
                 speaker.textContent = "";
-
-                // 🔥 [수정 1] 주석을 해제하여 DOM에서 보이지 않도록 확실하게 숨깁니다.
                 speaker.style.display = "none";
-
-                // 🔥 [수정 2] 부모 버블 전체가 렌더링 찌꺼기로 남지 않도록 부모 요소도 숨김 처리합니다.
                 const parentBubble = speaker.closest(".chat-bubble");
                 if (parentBubble) {
                     parentBubble.style.display = "none";
@@ -290,7 +299,10 @@ function updateCanvas() {
 
         applySmartHighlighting(textWrapper);
 
-        // 형광펜 끊김 방지 패치
+        if (document.activeElement !== els.editor) {
+            applySmartHighlighting(els.editor);
+        }
+
         const canvasSpans = textWrapper.getElementsByTagName("span");
         for (let span of canvasSpans) {
             if (span.style.backgroundColor && span.style.backgroundColor !== "transparent") {
@@ -308,21 +320,26 @@ function updateCanvas() {
         textWrapper.style.lineHeight = `${els.lineHeight.value}px`;
         textWrapper.style.whiteSpace = "pre-wrap";
         textWrapper.style.wordBreak = els.wordBreak.value;
+
+        textWrapper.style.overflowWrap = "break-word";
+        textWrapper.style.wordWrap = "break-word";
+
         textWrapper.style.color = els.globalTextColor.value;
+
+        textWrapper.style.setProperty("--parent-lh", `${els.lineHeight.value}px`);
 
         if (els.editor) {
             els.editor.style.fontWeight = els.bodyWeight ? els.bodyWeight.value : "400";
+            els.editor.style.color = els.globalTextColor.value;
+            els.editor.style.setProperty("--parent-lh", `${els.lineHeight.value}px`);
         }
 
-        // 대화 버블 색상 동기화 (에디터 + 캔버스 양쪽)
         applyBubbleColors(els.editor);
         applyBubbleColors(textWrapper);
 
-        // 본문 삽입 블록(제목/부제목/박스) 스타일 동기화 (에디터 + 캔버스 양쪽)
         applyInlineContentBlocks(els.editor);
         applyInlineContentBlocks(textWrapper);
 
-        // 가로 구분선 색상 실시간 연동
         const currentTextColor = els.globalTextColor.value;
         const allDividers = document.querySelectorAll(
             "#textEditor .fade-divider-line, #canvasTextWrapper .fade-divider-line"
@@ -345,12 +362,10 @@ function updateCanvas() {
             textWrapper.style.textShadow = "none";
         }
 
-        // 장평(ScaleX) 제어
         const scaleFactor = (parseInt(els.fontScaleX.value) || 100) / 100;
         textWrapper.style.display = "block";
         applyHorizontalScale(textWrapper, scaleFactor, els.alignH.value);
 
-        // 문단 간격 조정
         const allParagraphs = textWrapper.querySelectorAll(
             "#canvasTextWrapper > div, #canvasTextWrapper > p, #canvasTextWrapper > .dialogue-line, #canvasTextWrapper > .chat-bubble"
         );
@@ -364,7 +379,6 @@ function updateCanvas() {
         });
     }
 
-    // 5. 정보 영역(작품명/작가명)
     const infoContainer = document.getElementById("canvasInfo");
     const textContainer = document.getElementById("canvasTextContainer");
 
@@ -427,7 +441,6 @@ function updateCanvas() {
     }
 }
 
-// 스마트 괄호/따옴표 하이라이트 알고리즘
 function applySmartHighlighting(container) {
     const hasQuotes = els.enableQuoteColor.checked;
     const hasParens = els.enableParenColor.checked;
@@ -473,7 +486,6 @@ function applySmartHighlighting(container) {
             if (overlapStart < overlapEnd) {
                 const node = info.node;
                 const parentCheck = node.parentNode;
-                // 🆕 사용자가 수동으로 지정한 따옴표 색 구간은 자동 재색칠에서 제외한다.
                 if (item.type === "quote" && parentCheck.closest && parentCheck.closest("[data-manual-quote-color]")) {
                     continue;
                 }
@@ -578,7 +590,6 @@ function syncLiveHighlights(overrideColors = null) {
         const elements = container.querySelectorAll("span, font");
 
         for (let el of elements) {
-            // 🆕 수동으로 지정된 따옴표 B색 구간은 표식으로 바로 갱신 (색상 피커를 바꿨을 때 반영)
             if (el.getAttribute("data-manual-quote-color") === "B") {
                 el.style.color = targetQuoteBManual;
             }
@@ -632,6 +643,17 @@ function syncLiveHighlights(overrideColors = null) {
 function prepareCanvasForCapture(container) {
     const targetSpans = container.querySelectorAll("span");
     targetSpans.forEach((span) => {
+        if (
+            span.classList.contains("bubble-speaker") ||
+            span.classList.contains("bubble-text") ||
+            span.closest(".bubble-profile") ||
+            span.closest(".bubble-action-btn") ||
+            span.closest(".inline-title-block") ||
+            span.closest(".inline-subtitle-block")
+        ) {
+            return;
+        }
+
         const bg = span.style.backgroundColor;
         if (bg && bg !== "transparent" && bg !== "initial") {
             span.setAttribute("data-original-html", span.innerHTML);
@@ -659,7 +681,6 @@ function restoreCanvasAfterCapture(container) {
     });
 }
 
-// 포맷팅 툴바 이벤트 리스너들
 document.getElementById("btnBold").addEventListener("click", () => {
     document.execCommand("bold", false, null);
     updateCanvas();
@@ -681,9 +702,6 @@ document.getElementById("btnSubText").addEventListener("click", () => {
     updateCanvas();
 });
 
-// 🆕 드래그한 텍스트에 따옴표 B색을 수동으로 적용 (기본값은 따옴표 A색 자동 감지)
-// data-manual-quote-color 표식을 남겨서 자동 하이라이트 로직(applySmartHighlighting)이
-// 이 구간을 다시 자동 색으로 덮어쓰지 않도록 한다. (본문입력란 + 미리보기 양쪽 모두 반영됨)
 document.getElementById("btnQuoteColorB").addEventListener("click", () => {
     const selection = window.getSelection();
     if (!selection.rangeCount || selection.isCollapsed) return;
@@ -720,7 +738,6 @@ document.getElementById("selHighlight").addEventListener("change", function () {
     updateCanvas();
 });
 
-// 🆕 강조선 A/B 공용 토글 함수: 같은 종류를 다시 누르면 해제, 다른 종류를 누르면 전환
 function toggleQuoteLine(variant) {
     let selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -762,7 +779,6 @@ function toggleQuoteLine(variant) {
 document.getElementById("btnQuoteLineA").addEventListener("click", () => toggleQuoteLine("A"));
 document.getElementById("btnQuoteLineB").addEventListener("click", () => toggleQuoteLine("B"));
 
-// 🆕 따옴표가 포함된 모든 문단에 강조선 A를 자동으로 적용
 function autoApplyQuoteLines() {
     const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/;
     const blocks = Array.from(els.editor.children);
@@ -787,81 +803,6 @@ function autoApplyQuoteLines() {
 }
 document.getElementById("btnAutoQuoteLine").addEventListener("click", autoApplyQuoteLines);
 
-// 🆕 대화 버블(채팅 느낌) 삽입/전환
-document.getElementById("btnChatBubble").addEventListener("click", () => {
-    els.editor.focus();
-    const selection = window.getSelection();
-    let range;
-    let selectedText = "";
-
-    if (selection.rangeCount && !selection.getRangeAt(0).collapsed) {
-        range = selection.getRangeAt(0);
-        selectedText = range.toString();
-        range.deleteContents();
-    } else if (selection.rangeCount) {
-        range = selection.getRangeAt(0);
-    } else {
-        range = document.createRange();
-        range.selectNodeContents(els.editor);
-        range.collapse(false);
-    }
-
-    const bubble = document.createElement("div");
-    bubble.className = "chat-bubble side-left";
-    bubble.setAttribute("data-side", "left");
-    bubble.setAttribute("contenteditable", "false");
-
-    const inner = document.createElement("div");
-    inner.className = "bubble-inner";
-
-    const speaker = document.createElement("span");
-    speaker.className = "bubble-speaker";
-    speaker.setAttribute("data-ph", "이름");
-    speaker.setAttribute("contenteditable", "true");
-
-    const content = document.createElement("span");
-    content.className = "bubble-text";
-    content.setAttribute("contenteditable", "true");
-    content.textContent = selectedText || "대사를 입력하세요";
-
-    const flipBtn = document.createElement("button");
-    flipBtn.type = "button";
-    flipBtn.className = "bubble-flip";
-    flipBtn.setAttribute("contenteditable", "false");
-    flipBtn.title = "좌우 전환";
-    flipBtn.textContent = "⇄";
-    flipBtn.addEventListener("mousedown", (e) => e.preventDefault());
-    flipBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const isLeft = bubble.classList.contains("side-left");
-        bubble.classList.toggle("side-left", !isLeft);
-        bubble.classList.toggle("side-right", isLeft);
-        bubble.setAttribute("data-side", isLeft ? "right" : "left");
-        updateCanvas();
-    });
-
-    inner.appendChild(speaker);
-    inner.appendChild(content);
-    inner.appendChild(flipBtn);
-    bubble.appendChild(inner);
-
-    range.insertNode(bubble);
-
-    const br = document.createElement("div");
-    br.innerHTML = "<br>";
-    bubble.parentNode.insertBefore(br, bubble.nextSibling);
-
-    const newRange = document.createRange();
-    newRange.selectNodeContents(content);
-    newRange.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-
-    updateCanvas();
-});
-
-// 🆕 본문 중간 삽입형 블록(제목 / 부제목 / 강조 박스) 공용 삽입 함수
 function insertContentBlock(className, placeholderText) {
     els.editor.focus();
     const selection = window.getSelection();
@@ -912,7 +853,6 @@ document.getElementById("btnAddSubtitleBlock").addEventListener("click", () => {
     insertContentBlock("inline-subtitle-block", "부제목을 입력하세요");
 });
 
-// 🆕 IME(한글 등) 조합 중에는 문단 재구성 로직이 개입하지 않도록 상태 추적
 let isComposingIME = false;
 els.editor.addEventListener("compositionstart", () => {
     isComposingIME = true;
@@ -921,8 +861,6 @@ els.editor.addEventListener("compositionend", () => {
     isComposingIME = false;
 });
 
-// 🆕 주어진 노드에서 #textEditor의 "직계 자식" 블록(문단)을 찾는다.
-// 문단 구조가 항상 textEditor의 직계 자식 div로 유지되어야 너비/행간/문단간격 스타일이 일관되게 적용된다.
 function findDirectChildBlock(node) {
     let el = node && node.nodeType === 3 ? node.parentNode : node;
     while (el && el.parentNode !== els.editor) {
@@ -931,8 +869,6 @@ function findDirectChildBlock(node) {
     return el && el !== els.editor ? el : null;
 }
 
-// 🆕 캐럿 위치에서 현재 문단을 정확히 둘로 나눠 각각 textEditor의 직계 자식 div로 만든다.
-// (문단 기준 = 엔터). 서식이 적용된 span 등은 Range.extractContents가 경계에서 자동으로 분리해준다.
 function splitParagraphAtCaret() {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -943,7 +879,6 @@ function splitParagraphAtCaret() {
     let blockEl = findDirectChildBlock(range.startContainer);
 
     if (!blockEl) {
-        // 감싸는 블록이 없는 평문 텍스트인 경우, 우선 전체를 하나의 문단으로 감싼다.
         const wrapper = document.createElement("div");
         while (els.editor.firstChild) wrapper.appendChild(els.editor.firstChild);
         els.editor.appendChild(wrapper);
@@ -951,7 +886,6 @@ function splitParagraphAtCaret() {
     }
 
     const newBlock = document.createElement("div");
-    // 정렬/들여쓰기 등 문단 서식은 새 문단에도 이어진다.
     if (blockEl.className) newBlock.className = blockEl.className;
     if (blockEl.style && blockEl.style.textAlign) newBlock.style.textAlign = blockEl.style.textAlign;
 
@@ -985,7 +919,6 @@ function splitParagraphAtCaret() {
     return newBlock;
 }
 
-// 🆕 문단 맨 앞에서 Backspace를 누르면 이전 문단과 깔끔하게 병합한다.
 function mergeParagraphBackward() {
     const selection = window.getSelection();
     if (!selection.rangeCount || !selection.isCollapsed) return false;
@@ -1040,7 +973,6 @@ function mergeParagraphBackward() {
     return true;
 }
 
-// 🆕 문단 맨 끝에서 Delete를 누르면 다음 문단과 깔끔하게 병합한다. (mergeParagraphBackward와 대칭)
 function mergeParagraphForward() {
     const selection = window.getSelection();
     if (!selection.rangeCount || !selection.isCollapsed) return false;
@@ -1111,7 +1043,6 @@ els.editor.addEventListener("keydown", function (e) {
             document.execCommand("insertLineBreak");
             return;
         }
-        // 일반 문단: 항상 깔끔한 직계 자식 div 두 개로 분리해 너비/행간/문단간격이 일관되게 유지되도록 한다.
         e.preventDefault();
         splitParagraphAtCaret();
         updateCanvas();
@@ -1135,7 +1066,6 @@ els.editor.addEventListener("keydown", function (e) {
     }
 });
 
-// 구분선 버튼
 document.getElementById("btnFadeLine").addEventListener("click", () => {
     els.editor.focus();
 
@@ -1168,7 +1098,6 @@ document.getElementById("btnFadeLine").addEventListener("click", () => {
     updateCanvas();
 });
 
-// 🆕 본문 중간 사진 블록 삽입
 let pendingImageInsertRange = null;
 
 document.getElementById("btnAddImage").addEventListener("click", () => {
@@ -1210,7 +1139,6 @@ function insertImageBlock(dataUrl) {
     selection.removeAllRanges();
     selection.addRange(range);
 
-    // 클릭 지점의 문단을 둘로 나누고 그 사이에 사진 블록을 끼워 넣는다.
     const afterBlock = splitParagraphAtCaret();
 
     const block = document.createElement("div");
@@ -1244,7 +1172,6 @@ function insertImageBlock(dataUrl) {
     updateCanvas();
 }
 
-// 사진 블록 상호작용: 마우스 휠 확대/축소, 드래그로 위치 이동, 하단 가장자리 드래그로 세로 길이 조절
 els.editor.addEventListener(
     "wheel",
     (e) => {
@@ -1318,7 +1245,366 @@ document.addEventListener("mouseup", () => {
     }
 });
 
-// 초기화 바인딩 및 관찰 리스너 등록
+/* =========================================================
+   [개선 완료] 채팅 멤버 관리, 접기, 대본 파싱 및 독립 이벤트 로직
+   ========================================================= */
+
+let chatMembers = [
+    { id: Date.now(), name: "A", color: "#97cddf", profile: "" },
+    { id: Date.now() + 1, name: "B", color: "#e697ba", profile: "" }
+];
+
+let memberPanelCollapsed = false;
+document.getElementById("btnToggleMemberPanel")?.addEventListener("click", () => {
+    memberPanelCollapsed = !memberPanelCollapsed;
+    const content = document.getElementById("memberPanelContent");
+    const arrow = document.getElementById("memberPanelArrow");
+    if (content && arrow) {
+        content.style.display = memberPanelCollapsed ? "none" : "block";
+        arrow.textContent = memberPanelCollapsed ? "▶" : "▼";
+    }
+});
+
+function renderMembers() {
+    const container = document.getElementById("memberListContainer");
+    if (!container) return;
+    container.innerHTML = "";
+
+    chatMembers.forEach((member, index) => {
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.gap = "4px";
+        row.style.alignItems = "center";
+        row.style.border = "1px solid #e2e8f0";
+        row.style.padding = "4px";
+        row.style.borderRadius = "6px";
+        row.style.background = "#f8fafc";
+
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.style.display = "none";
+        fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    member.profile = ev.target.result;
+                    renderMembers();
+                    updateCanvas();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        const profileBtn = document.createElement("button");
+        profileBtn.style.width = "24px";
+        profileBtn.style.height = "24px";
+        profileBtn.style.padding = "0";
+        profileBtn.style.border = "1px dashed #cbd5e1";
+        profileBtn.style.borderRadius = "50%";
+        profileBtn.style.backgroundSize = "cover";
+        profileBtn.style.backgroundPosition = "center";
+        profileBtn.style.cursor = "pointer";
+        profileBtn.style.fontSize = "9px";
+        profileBtn.style.color = "#64748b";
+        profileBtn.style.flexShrink = "0";
+        profileBtn.style.backgroundImage = member.profile ? `url(${member.profile})` : "none";
+        profileBtn.style.backgroundColor = member.profile ? "transparent" : member.color;
+        profileBtn.textContent = member.profile ? "" : "P";
+        profileBtn.onclick = () => fileInput.click();
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.value = member.name;
+        nameInput.placeholder = "이름";
+        nameInput.style.width = "100%";
+        nameInput.style.flex = "1";
+        nameInput.style.fontSize = "11px";
+        nameInput.style.padding = "2px 4px";
+        nameInput.style.border = "1px solid #cbd5e1";
+        nameInput.style.borderRadius = "4px";
+
+        nameInput.addEventListener("input", (e) => {
+            member.name = e.target.value;
+
+            const matchBubbles = els.editor.querySelectorAll(`.chat-bubble[data-member-id="${member.id}"]`);
+            matchBubbles.forEach((bubble) => {
+                const speakerNode = bubble.querySelector(".bubble-speaker");
+                if (speakerNode) {
+                    speakerNode.style.color = member.color;
+                }
+                const profileImgNode = bubble.querySelector(".bubble-profile");
+                if (profileImgNode && !member.profile) {
+                    profileImgNode.style.backgroundColor = member.color;
+                }
+            });
+            profileBtn.style.backgroundColor = member.profile ? "transparent" : member.color;
+            updateCanvas();
+        });
+
+        const colorInput = document.createElement("input");
+        colorInput.type = "color";
+        colorInput.value = member.color;
+        colorInput.style.width = "20px";
+        colorInput.style.height = "20px";
+        colorInput.style.padding = "0";
+        colorInput.style.border = "none";
+        colorInput.style.cursor = "pointer";
+        colorInput.style.background = "none";
+        colorInput.style.flexShrink = "0";
+        colorInput.onchange = (e) => {
+            member.color = e.target.value;
+
+            const matchBubbles = els.editor.querySelectorAll(`.chat-bubble[data-member-id="${member.id}"]`);
+            matchBubbles.forEach((bubble) => {
+                const speakerNode = bubble.querySelector(".bubble-speaker");
+                if (speakerNode) {
+                    speakerNode.style.color = member.color;
+                }
+            });
+            updateCanvas();
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "×";
+        delBtn.style.width = "16px";
+        delBtn.style.border = "none";
+        delBtn.style.background = "none";
+        delBtn.style.cursor = "pointer";
+        delBtn.style.color = "#ef4444";
+        delBtn.style.fontWeight = "bold";
+        delBtn.style.fontSize = "12px";
+        delBtn.style.flexShrink = "0";
+        delBtn.onclick = () => {
+            chatMembers.splice(index, 1);
+            renderMembers();
+            updateCanvas();
+        };
+
+        row.appendChild(fileInput);
+        row.appendChild(profileBtn);
+        row.appendChild(nameInput);
+        row.appendChild(colorInput);
+        row.appendChild(delBtn);
+        container.appendChild(row);
+    });
+}
+
+document.getElementById("btnAddMember")?.addEventListener("click", () => {
+    chatMembers.push({ id: Date.now(), name: "새 인물", color: "#000000", profile: "" });
+    renderMembers();
+    updateCanvas();
+});
+
+renderMembers();
+
+document.getElementById("btnAutoChatParse")?.addEventListener("click", () => {
+    if (chatMembers.length === 0) {
+        alert("최소 1명 이상의 멤버를 등록해주세요.");
+        return;
+    }
+
+    const editor = document.getElementById("textEditor");
+    let rawText = editor.innerText;
+    editor.innerHTML = "";
+
+    const lines = rawText.split("\n");
+    const autoBreak = els.autoParenBreak ? els.autoParenBreak.checked : true;
+
+    const chatRegex = /^([^|:]+)\s*[|:]\s*(.+)$/;
+    const startQuotes = ['"', "'", "“", "「", "『"];
+    const endQuotes = ['"', "'", "”", "」", "』"];
+
+    lines.forEach((line) => {
+        const text = line.trim();
+        if (!text) {
+            const brDiv = document.createElement("div");
+            brDiv.innerHTML = "<br>";
+            editor.appendChild(brDiv);
+            return;
+        }
+
+        const matchChat = text.match(chatRegex);
+        const firstChar = text.charAt(0);
+        const lastChar = text.charAt(text.length - 1);
+        const matchQuote = startQuotes.includes(firstChar);
+
+        if (matchChat) {
+            const speakerName = matchChat[1].trim();
+            let dialogue = matchChat[2].trim();
+
+            if (autoBreak) {
+                dialogue = dialogue.replace(/(["”」』›»])\s*(\(|\[|\{|<)/g, "$1\n$2");
+            }
+
+            const bubble = createParsedBubble(speakerName, dialogue);
+            editor.appendChild(bubble);
+        } else if (matchQuote) {
+            let dialogue = text;
+
+            if (autoBreak) {
+                dialogue = dialogue.replace(/(["”」』›»])\s*(\(|\[|\{|<)/g, "$1\n$2");
+            }
+
+            const defaultSpeaker = chatMembers[0].name;
+            const bubble = createParsedBubble(defaultSpeaker, dialogue);
+            editor.appendChild(bubble);
+        } else {
+            const div = document.createElement("div");
+            div.textContent = text;
+            editor.appendChild(div);
+        }
+    });
+
+    updateCanvas();
+});
+
+function createParsedBubble(speakerName, contentStr) {
+    let member = chatMembers.find((m) => m.name === speakerName);
+    if (!member) member = chatMembers[0];
+
+    const bubble = document.createElement("div");
+    bubble.className = "chat-bubble side-left";
+    bubble.setAttribute("data-side", "left");
+    bubble.setAttribute("contenteditable", "false");
+    bubble.setAttribute("data-member-id", member.id);
+
+    const profileImg = document.createElement("div");
+    profileImg.className = "bubble-profile";
+    profileImg.setAttribute("data-action", "change-member");
+    if (member.profile) {
+        profileImg.style.backgroundImage = `url(${member.profile})`;
+        profileImg.style.backgroundColor = "transparent";
+    } else {
+        profileImg.style.backgroundColor = member.color;
+    }
+
+    const contentCol = document.createElement("div");
+    contentCol.className = "bubble-content-col";
+
+    const infoRow = document.createElement("div");
+    infoRow.className = "bubble-info";
+
+    const speaker = document.createElement("span");
+    speaker.className = "bubble-speaker";
+    speaker.textContent = member.name;
+    speaker.style.color = member.color;
+    speaker.setAttribute("data-action", "change-member");
+
+    const flipBtn = document.createElement("button");
+    flipBtn.className = "bubble-action-btn bubble-flip-btn";
+    flipBtn.innerHTML = "⇄";
+    flipBtn.title = "좌우 전환";
+    flipBtn.setAttribute("data-action", "flip-bubble");
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "bubble-action-btn bubble-delete-btn";
+    delBtn.innerHTML = "✕";
+    delBtn.title = "삭제";
+    delBtn.setAttribute("data-action", "delete-bubble");
+
+    infoRow.appendChild(speaker);
+    infoRow.appendChild(flipBtn);
+    infoRow.appendChild(delBtn);
+
+    const inner = document.createElement("div");
+    inner.className = "bubble-inner";
+
+    const content = document.createElement("span");
+    content.className = "bubble-text";
+    content.setAttribute("contenteditable", "true");
+
+    const lines = contentStr.split("\n");
+    lines.forEach((l, idx) => {
+        content.appendChild(document.createTextNode(l));
+        if (idx < lines.length - 1) content.appendChild(document.createElement("br"));
+    });
+
+    inner.appendChild(content);
+    contentCol.appendChild(infoRow);
+    contentCol.appendChild(inner);
+
+    bubble.appendChild(profileImg);
+    bubble.appendChild(contentCol);
+
+    return bubble;
+}
+
+document.getElementById("textEditor").addEventListener("click", (e) => {
+    const delBtn = e.target.closest('[data-action="delete-bubble"]');
+    if (delBtn) {
+        const bubble = delBtn.closest(".chat-bubble");
+        if (bubble) {
+            bubble.remove();
+            updateCanvas();
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    }
+
+    const flipBtn = e.target.closest('[data-action="flip-bubble"]');
+    if (flipBtn) {
+        const bubble = flipBtn.closest(".chat-bubble");
+        if (bubble) {
+            const isLeft = bubble.classList.contains("side-left");
+            bubble.classList.toggle("side-left", !isLeft);
+            bubble.classList.toggle("side-right", isLeft);
+            bubble.setAttribute("data-side", isLeft ? "right" : "left");
+            updateCanvas();
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    }
+
+    const memberTrigger = e.target.closest('[data-action="change-member"]');
+    if (memberTrigger) {
+        const bubble = memberTrigger.closest(".chat-bubble");
+        if (bubble && chatMembers.length > 0) {
+            const currentId = bubble.getAttribute("data-member-id");
+            if (!currentId) return;
+
+            let idx = chatMembers.findIndex((m) => m.id == currentId);
+            let nextIdx = (idx + 1) % chatMembers.length;
+            const nextMember = chatMembers[nextIdx];
+
+            bubble.setAttribute("data-member-id", nextMember.id);
+
+            const speaker = bubble.querySelector(".bubble-speaker");
+            if (speaker) {
+                speaker.textContent = nextMember.name;
+                speaker.style.color = nextMember.color;
+            }
+
+            let profileImg = bubble.querySelector(".bubble-profile");
+            if (nextMember.profile) {
+                if (!profileImg) {
+                    profileImg = document.createElement("div");
+                    profileImg.className = "bubble-profile";
+                    profileImg.style.width = "24px";
+                    profileImg.style.height = "24px";
+                    profileImg.style.borderRadius = "50%";
+                    profileImg.style.backgroundSize = "cover";
+                    profileImg.setAttribute("data-action", "change-member");
+                    speaker.parentNode.insertBefore(profileImg, speaker);
+                }
+                profileImg.style.backgroundImage = `url(${nextMember.profile})`;
+                profileImg.style.backgroundColor = "transparent";
+            } else if (profileImg) {
+                profileImg.style.backgroundImage = "none";
+                profileImg.style.backgroundColor = nextMember.color;
+            }
+
+            updateCanvas();
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+    }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     const alignCommandMap = {
         left: "justifyLeft",
@@ -1326,6 +1612,47 @@ document.addEventListener("DOMContentLoaded", () => {
         right: "justifyRight",
         justify: "justifyFull"
     };
+    const toggleProfile = document.getElementById("toggleProfile");
+    const toggleName = document.getElementById("toggleName");
+
+    const editorContainer = document.getElementById("textEditor");
+    const canvasContainer = document.getElementById("canvasTextWrapper");
+
+    if (toggleProfile) {
+        toggleProfile.addEventListener("change", (e) => {
+            const hasChecked = e.target.checked;
+            if (editorContainer) {
+                if (hasChecked) editorContainer.classList.remove("hide-profiles");
+                else editorContainer.classList.add("hide-profiles");
+            }
+            if (canvasContainer) {
+                if (hasChecked) canvasContainer.classList.remove("hide-profiles");
+                else canvasContainer.classList.add("hide-profiles");
+            }
+            updateCanvas();
+        });
+    }
+
+    if (toggleName) {
+        toggleName.addEventListener("change", (e) => {
+            const hasChecked = e.target.checked;
+            if (editorContainer) {
+                if (hasChecked) editorContainer.classList.remove("hide-names");
+                else editorContainer.classList.add("hide-names");
+            }
+            if (canvasContainer) {
+                if (hasChecked) canvasContainer.classList.remove("hide-names");
+                else canvasContainer.classList.add("hide-names");
+            }
+            updateCanvas();
+        });
+    }
+
+    if (els.autoParenBreak) {
+        els.autoParenBreak.addEventListener("change", () => {
+            updateCanvas();
+        });
+    }
 
     document.querySelectorAll(".segmented-control button").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -1341,7 +1668,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     els.editor.contains(selection.getRangeAt(0).commonAncestorContainer);
 
                 if (hasActiveSelection) {
-                    // 드래그한 문장에만 정렬 적용 (기본 정렬과 무관하게 개별 적용)
                     els.editor.focus();
                     document.execCommand(alignCommandMap[value] || "justifyLeft", false, null);
                     updateCanvas();
@@ -1365,10 +1691,9 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCanvas();
     });
 
-    els.editor.addEventListener("input", updateCanvas);
+    els.editor.addEventListener("input", scheduleUpdateCanvas);
     if (typeof renderPresets === "function") renderPresets();
 
-    // 입력 변화 감지 자동 트리거 타겟 통합 리스트
     const autoTriggers = [
         els.cardTitleInput,
         els.titleSize,
@@ -1416,11 +1741,19 @@ document.addEventListener("DOMContentLoaded", () => {
         els.textShadowColor,
         els.textShadowBlur
     ];
+    let _updateCanvasRAF = null;
+    function scheduleUpdateCanvas() {
+        if (_updateCanvasRAF) cancelAnimationFrame(_updateCanvasRAF);
+        _updateCanvasRAF = requestAnimationFrame(() => {
+            _updateCanvasRAF = null;
+            updateCanvas();
+        });
+    }
 
     autoTriggers.forEach((element) => {
         if (element) {
-            element.addEventListener("input", updateCanvas);
-            element.addEventListener("change", updateCanvas);
+            element.addEventListener("input", scheduleUpdateCanvas);
+            element.addEventListener("change", scheduleUpdateCanvas);
         }
     });
 
@@ -1429,7 +1762,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 50);
 });
 
-// 이미지 캡처 및 저장 기능
 document.getElementById("btnCopy").addEventListener("click", () => {
     if (!els.captureArea) return;
     const originalHeight = els.captureArea.style.height;
@@ -1476,7 +1808,6 @@ document.getElementById("btnSave").addEventListener("click", () => {
         });
 });
 
-// 배경 이미지 업로드 및 제어
 document.getElementById("bgImageInput").addEventListener("change", function (e) {
     const file = e.target.files[0];
     if (file) {
@@ -1500,10 +1831,6 @@ function updateBgImageStyles() {
     document.getElementById(id).addEventListener("input", updateBgImageStyles);
 });
 
-// 🆕 붙여넣기: 클립보드의 서식(HTML)은 전부 무시하고 순수 텍스트 + 줄바꿈만 반영한다.
-// 줄바꿈으로 만들어지는 문단은 직접 엔터를 쳤을 때(splitParagraphAtCaret)와
-// 완전히 동일한 구조(#textEditor의 직계 자식 div)로 만들어서 문단 너비/행간/문단간격이
-// 항상 일관되게 적용되도록 한다.
 document.getElementById("textEditor").addEventListener("paste", function (e) {
     e.preventDefault();
     const text = (e.originalEvent || e).clipboardData.getData("text/plain");
@@ -1517,7 +1844,6 @@ document.getElementById("textEditor").addEventListener("paste", function (e) {
     range.deleteContents();
 
     if (lines.length === 1) {
-        // 줄바꿈이 없는 단순 텍스트는 현재 위치에 그대로 삽입
         const textNode = document.createTextNode(lines[0]);
         range.insertNode(textNode);
         range.setStartAfter(textNode);
@@ -1525,7 +1851,6 @@ document.getElementById("textEditor").addEventListener("paste", function (e) {
         selection.removeAllRanges();
         selection.addRange(range);
     } else {
-        // 여러 줄: 첫 줄은 현재 문단에 이어 붙이고, 나머지 줄들은 새 문단(직계 div)으로 분리
         const firstTextNode = document.createTextNode(lines[0]);
         range.insertNode(firstTextNode);
 
@@ -1588,7 +1913,6 @@ function normalizeParagraphs(container) {
             node.classList.contains("content-image-block")
         );
     }
-    // 문단 자체(직계 div)에 걸려있는 서식(들여쓰기, 정렬)을 보존하기 위해 메타데이터로 추출한다.
     function captureMeta(node) {
         const meta = { textAlign: "" };
         if (node.style && node.style.textAlign) {
