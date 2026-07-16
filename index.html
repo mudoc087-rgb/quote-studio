@@ -41,145 +41,305 @@
                                 <span class="section-index">01</span>
                                 <span class="section-title">콘텐츠</span>
                             </summary>
-                            <div class="panel-section-body">
-                                <!-- 제목 : 인풋은 길게, 크기/굵기 컨트롤은 짧게 -->
-                                <div class="text-field-block">
-                                    <div class="text-field-controls">
-                                        <label for="cardTitleInput" class="field-tag">제목</label>
-                                        <div class="stepper-minimal stepper-compact">
-                                            <button type="button" onclick="stepInput('titleSize', -1)">-</button>
-                                            <input type="number" id="titleSize" value="26" />
-                                            <button type="button" onclick="stepInput('titleSize', 1)">+</button>
+
+                            <div class="panel-section-body" style="display: flex; flex-direction: column; gap: 14px">
+                                <details
+                                    class="content-toggle-card"
+                                    style="
+                                        border: 1px solid var(--color-border-light);
+                                        border-radius: 6px;
+                                        overflow: hidden;
+                                        background: #ffffff;
+                                    ">
+                                    <summary
+                                        style="
+                                            padding: 10px 12px;
+                                            font-size: 12px;
+                                            font-weight: 600;
+                                            background: #f8fafc;
+                                            cursor: pointer;
+                                            user-select: none;
+                                        ">
+                                        📝 타이틀 & 출처
+                                    </summary>
+                                    <div style="padding: 12px; border-top: 1px solid var(--color-border-light)">
+                                        <div class="text-field-block" style="margin-bottom: 10px">
+                                            <div
+                                                class="text-field-controls"
+                                                style="
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: space-between;
+                                                    margin-bottom: 4px;
+                                                ">
+                                                <label
+                                                    for="cardTitleInput"
+                                                    class="field-tag"
+                                                    style="font-size: 11px; font-weight: 600"
+                                                    >제목</label
+                                                >
+                                                <div style="display: flex; gap: 4px; align-items: center">
+                                                    <div class="stepper-minimal stepper-compact">
+                                                        <button type="button" onclick="stepInput('titleSize', -1)">
+                                                            -
+                                                        </button>
+                                                        <input type="number" id="titleSize" value="26" />
+                                                        <button type="button" onclick="stepInput('titleSize', 1)">
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                    <select
+                                                        id="titleWeight"
+                                                        class="select-compact"
+                                                        style="font-size: 11px">
+                                                        <option value="500">보통</option>
+                                                        <option value="600">중간</option>
+                                                        <option value="700" selected>굵게</option>
+                                                        <option value="900" selected>아주굵게</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                id="cardTitleInput"
+                                                class="text-field-input"
+                                                placeholder="제목 입력 (선택)"
+                                                style="width: 100%; padding: 6px; font-size: 11px" />
                                         </div>
-                                        <select id="titleWeight" class="select-compact">
-                                            <option value="500">보통</option>
-                                            <option value="600">중간</option>
-                                            <option value="700" selected>굵게</option>
-                                            <option value="800">매우 굵게</option>
-                                        </select>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        id="cardTitleInput"
-                                        class="text-field-input"
-                                        placeholder="카드 제목 (선택)" />
-                                </div>
 
-                                <!-- 부제목 : 동일한 패턴 -->
-                                <div class="text-field-block">
-                                    <div class="text-field-controls">
-                                        <label for="cardSubtitleInput" class="field-tag">부제목</label>
-                                        <div class="stepper-minimal stepper-compact">
-                                            <button type="button" onclick="stepInput('subtitleSize', -1)">-</button>
-                                            <input type="number" id="subtitleSize" value="15" />
-                                            <button type="button" onclick="stepInput('subtitleSize', 1)">+</button>
+                                        <!-- 부제목 (기존 ID 절대 보존) -->
+                                        <div class="text-field-block" style="margin-bottom: 12px">
+                                            <div
+                                                class="text-field-controls"
+                                                style="
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: space-between;
+                                                    margin-bottom: 4px;
+                                                ">
+                                                <label
+                                                    for="cardSubtitleInput"
+                                                    class="field-tag"
+                                                    style="font-size: 11px; font-weight: 600"
+                                                    >부제목</label
+                                                >
+                                                <div style="display: flex; gap: 4px; align-items: center">
+                                                    <div class="stepper-minimal stepper-compact">
+                                                        <button type="button" onclick="stepInput('subtitleSize', -1)">
+                                                            -
+                                                        </button>
+                                                        <input type="number" id="subtitleSize" value="15" />
+                                                        <button type="button" onclick="stepInput('subtitleSize', 1)">
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                    <select
+                                                        id="subtitleWeight"
+                                                        class="select-compact"
+                                                        style="font-size: 11px">
+                                                        <option value="400" selected>보통</option>
+                                                        <option value="700">굵게</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                id="cardSubtitleInput"
+                                                class="text-field-input"
+                                                placeholder="부제목 입력 (선택)"
+                                                style="width: 100%; padding: 6px; font-size: 11px" />
                                         </div>
-                                        <select id="subtitleWeight" class="select-compact">
-                                            <option value="400" selected>보통</option>
-                                            <option value="500">중간</option>
-                                            <option value="700">굵게</option>
-                                        </select>
+
+                                        <div
+                                            class="panel-divider"
+                                            style="
+                                                margin: 8px 0;
+                                                border-top: 1px solid var(--color-border-light);
+                                            "></div>
+
+                                        <div
+                                            class="field-row cols-3"
+                                            style="
+                                                display: grid;
+                                                grid-template-columns: 1fr 1fr 1fr;
+                                                gap: 6px;
+                                                align-items: center;
+                                            ">
+                                            <div class="field-col">
+                                                <input
+                                                    type="text"
+                                                    id="titleInput"
+                                                    placeholder="작품명"
+                                                    style="width: 100%; padding: 5px; font-size: 11px" />
+                                            </div>
+                                            <div class="field-col">
+                                                <input
+                                                    type="text"
+                                                    id="creatorInput"
+                                                    placeholder="제작자"
+                                                    style="width: 100%; padding: 5px; font-size: 11px" />
+                                            </div>
+                                            <div class="field-col" style="display: flex; align-items: center; gap: 4px">
+                                                <span
+                                                    style="
+                                                        font-size: 10px;
+                                                        white-space: nowrap;
+                                                        color: var(--color-text-sub);
+                                                    "
+                                                    >여백</span
+                                                >
+                                                <div class="stepper-minimal" style="height: 25px; flex: 1">
+                                                    <button type="button" onclick="stepInput('infoMarginTop', -5)">
+                                                        -
+                                                    </button>
+                                                    <input
+                                                        type="number"
+                                                        id="infoMarginTop"
+                                                        value="35"
+                                                        style="font-size: 11px" />
+                                                    <button type="button" onclick="stepInput('infoMarginTop', 5)">
+                                                        +
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <input
-                                        type="text"
-                                        id="cardSubtitleInput"
-                                        class="text-field-input"
-                                        placeholder="부제목 (선택)" />
-                                </div>
-
-                                <div class="panel-divider"></div>
-
-                                <!-- 본문 : 버튼이 많으므로 얇고 촘촘하게 -->
-                                <div class="block-label body-label">본문</div>
-                                <div class="editor-toolbar toolbar-dense">
-                                    <button id="btnClearHighlight" class="text-danger" title="서식 지우기">
-                                        지우기
-                                    </button>
-
-                                    <button
-                                        id="btnAddTitleBlock"
-                                        class="btn-block-insert"
-                                        title="본문 중간에 제목 블록 삽입">
-                                        제목
-                                    </button>
-                                    <button
-                                        id="btnAddSubtitleBlock"
-                                        class="btn-block-insert"
-                                        title="본문 중간에 부제목 블록 삽입">
-                                        부제목
-                                    </button>
-                                    <button
-                                        id="btnAddImage"
-                                        class="btn-block-insert"
-                                        title="클릭한 위치에 사진 블록 삽입">
-                                        사진
-                                    </button>
-                                    <button id="btnFadeLine" title="구분선">구분선</button>
-
-                                    <span class="toolbar-sep"></span>
-
-                                    <button id="btnBold" title="굵게"><b>B</b></button>
-                                    <button id="btnItalic" title="기울임"><i>I</i></button>
-                                    <button id="btnQuoteWrap" title="따옴표 감싸기">“”</button>
-
-                                    <button id="btnQuoteColorB" title="드래그한 텍스트에 따옴표 B색 적용">
-                                        따옴표B
-                                    </button>
-                                    <button
-                                        id="btnAutoQuoteLine"
-                                        title="따옴표가 포함된 모든 문단에 강조선 A를 자동으로 적용">
-                                        자동강조따옴
-                                    </button>
-                                    <button id="btnQuoteLineA" class="btn-dialogue-line" title="대사 강조선 바 A">
-                                        강조선A
-                                    </button>
-                                    <button id="btnQuoteLineB" class="btn-dialogue-line" title="대사 강조선 바 B">
-                                        강조선B
-                                    </button>
-                                    <button id="btnChatBubble" class="btn-chat-bubble" title="대화 버블로 변환">
-                                        말풍선
-                                    </button>
-                                    <button id="btnSubText" title="보조 글자색 적용">보조색</button>
-                                    <select id="selHighlight" class="toolbar-select" title="형광펜">
-                                        <option value="" disabled selected>형광펜</option>
-                                        <option value="A">형광펜 A</option>
-                                        <option value="B">형광펜 B</option>
-                                        <option value="C">형광펜 C</option>
-                                    </select>
-                                </div>
-                                <input type="file" id="inlineImageInput" accept="image/*" style="display: none" />
-
+                                </details>
                                 <div
-                                    id="textEditor"
-                                    contenteditable="true"
-                                    placeholder="이곳에 발췌할 문구를 입력하거나 드래그 후 상단 효과 버튼을 적용하세요."></div>
-                                <p class="field-hint">
-                                    사진 블록: 마우스 휠로 확대/축소 · 이미지 위에서 드래그로 위치 이동 · 하단
-                                    가장자리를 드래그하면 세로 길이를 조절할 수 있어요.
-                                </p>
+                                    class="content-editor-group"
+                                    style="
+                                        border: 1px solid var(--color-border);
+                                        border-radius: 8px;
+                                        padding: 10px;
+                                        background: #ffffff;
+                                    ">
+                                    <div class="editor-toolbar">
+                                        <!-- 카테고리 1: 서식 -->
+                                        <button
+                                            id="btnClearHighlight"
+                                            class="btn-editor-pill pill-danger"
+                                            title="서식 지우기">
+                                            지우기
+                                        </button>
+                                        <button id="btnBold" class="btn-editor-pill" title="굵게"><b>B</b></button>
+                                        <button id="btnItalic" class="btn-editor-pill" title="기울임"><i>I</i></button>
+                                        <button id="btnQuoteWrap" class="btn-editor-pill" title="따옴표 감싸기">
+                                            “”
+                                        </button>
+                                        <button
+                                            id="btnSubText"
+                                            class="btn-editor-pill pill-sub"
+                                            title="보조 글자색 적용">
+                                            보조색
+                                        </button>
 
-                                <div class="panel-divider"></div>
+                                        <select id="selHighlight" class="toolbar-select" style="width: 80px">
+                                            <option value="" disabled selected>형광펜</option>
+                                            <option value="A">형광A</option>
+                                            <option value="B">형광B</option>
+                                            <option value="C">형광C</option>
+                                        </select>
 
-                                <div class="field-row cols-3">
-                                    <div class="field-col">
-                                        <label for="titleInput">작품명</label>
-                                        <input type="text" id="titleInput" placeholder="예: 작품명" />
+                                        <div class="toolbar-divider"></div>
+
+                                        <button id="btnAddTitleBlock" class="btn-editor-pill pill-blue">+ 제목</button>
+                                        <button id="btnAddSubtitleBlock" class="btn-editor-pill pill-blue">
+                                            + 부제목
+                                        </button>
+                                        <button id="btnAddImage" class="btn-editor-pill pill-blue">+ 사진</button>
+                                        <button id="btnFadeLine" class="btn-editor-pill pill-blue">+ 구분선</button>
+
+                                        <div class="toolbar-divider"></div>
+
+                                        <button id="btnQuoteColorB" class="btn-editor-pill" title="따옴표 B색 적용">
+                                            따옴표B
+                                        </button>
+                                        <button id="btnQuoteLineA" class="btn-editor-pill" title="강조선 A">
+                                            강조선A
+                                        </button>
+                                        <button id="btnQuoteLineB" class="btn-editor-pill" title="강조선 B">
+                                            강조선B
+                                        </button>
+                                        <div class="toolbar-divider"></div>
+                                        <button id="btnAutoQuoteLine" class="btn-editor-pill pill-green">
+                                            ⚡자동강조선
+                                        </button>
+
+                                        <button id="btnAutoChatParse" class="btn-editor-pill pill-green">
+                                            ⚡자동말풍선
+                                        </button>
                                     </div>
-                                    <div class="field-col">
-                                        <label for="creatorInput">제작자</label>
-                                        <input type="text" id="creatorInput" placeholder="예: 제작자" />
-                                    </div>
-                                    <div class="field-col">
-        <label for="infoMarginTop">여백 (px)</label>
-        <div class="stepper-minimal">
-            <button type="button" onclick="stepInput('infoMarginTop', -5)">-</button>
-            <input type="number" id="infoMarginTop" value="35" />
-            <button type="button" onclick="stepInput('infoMarginTop', 5)">+</button>
-        </div>
+
+                                    <input type="file" id="inlineImageInput" accept="image/*" style="display: none" />
+                                    <div id="textEditor" contenteditable="true" placeholder="내용을 입력하세요."></div>
                                 </div>
+                                <details
+                                    class="content-toggle-card"
+                                    style="
+                                        border: 1px solid var(--color-border-light);
+                                        border-radius: 6px;
+                                        overflow: hidden;
+                                        background: #ffffff;
+                                    ">
+                                    <summary
+                                        style="
+                                            padding: 10px 12px;
+                                            font-size: 12px;
+                                            font-weight: 600;
+                                            background: #f8fafc;
+                                            cursor: pointer;
+                                            user-select: none;
+                                        ">
+                                        💬 말풍선 & 인물
+                                    </summary>
+                                    <div style="padding: 12px; border-top: 1px solid var(--color-border-light)">
+                                        <div
+                                            class="checkbox-minimal-group checkbox-row"
+                                            style="
+                                                justify-content: space-around;
+                                                background: #f8fafc;
+                                                padding: 8px;
+                                                border-radius: 6px;
+                                                display: flex;
+                                                gap: 8px;
+                                                margin-bottom: 10px;
+                                            ">
+                                            <button
+                                                id="btnAddMember"
+                                                class="btn btn-ghost"
+                                                style="
+                                                    font-size: 11px;
+                                                    padding: 6px;
+
+                                                    border: 1px dashed var(--color-border);
+                                                ">
+                                                + 인물 추가
+                                            </button>
+                                            <label style="font-size: 11px; margin: 0; cursor: pointer"
+                                                ><input type="checkbox" id="autoParenBreak" checked /> 괄호
+                                                줄바꿈</label
+                                            >
+                                            <label style="font-size: 11px; margin: 0; cursor: pointer"
+                                                ><input type="checkbox" id="toggleProfile" checked /> 프사</label
+                                            >
+                                            <label style="font-size: 11px; margin: 0; cursor: pointer"
+                                                ><input type="checkbox" id="toggleName" checked /> 이름</label
+                                            >
+                                        </div>
+                                        <div
+                                            id="memberListContainer"
+                                            style="
+                                                display: grid;
+                                                grid-template-columns: 1fr 1fr;
+                                                gap: 6px;
+                                                margin-bottom: 8px;
+                                            ">
+                                            <!-- JS에 의해 동적으로 멤버 항목들이 삽입되는 곳 -->
+                                        </div>
+                                    </div>
+                                </details>
                             </div>
                         </details>
-
                         <!-- 2. 캔버스 & 배경 -->
                         <details class="panel-section">
                             <summary class="panel-section-header">
@@ -328,7 +488,7 @@
                                             <option value="'KoPubWorld Dotum', sans-serif">KoPubWorld 돋움</option>
                                             <option value="'RIDIBatang-subset', serif">리디바탕</option>
                                             <option value="'Noto Serif KR', serif">Noto Serif KR</option>
-                                            <option value="'Gowun Dodum', sans-serif">고운돋움</option>
+                                            <option value="'ChosunIlboMyungjo', serif">조선일보명조</option>
                                         </select>
                                     </div>
                                     <div class="field-col">
