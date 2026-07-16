@@ -51,10 +51,13 @@ button {
     font-family: inherit;
     outline: none;
 }
+@font-face {
+    font-family: "ChosunIlboMyungjo";
+    src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
 
-/* =========================================================
-   앱 셸 및 레이아웃
-   ========================================================= */
 .app-shell {
     display: flex;
     flex-direction: column;
@@ -64,13 +67,10 @@ button {
 .app-body {
     flex: 1 1 auto;
     display: grid;
-    grid-template-columns: 450px 1fr;
+    grid-template-columns: 500px 1fr;
     min-height: 0;
 }
 
-/* =========================================================
-   좌측 제어 패널
-   ========================================================= */
 .control-panel {
     background: var(--color-bg-panel);
     border-right: 1px solid var(--color-border);
@@ -196,7 +196,6 @@ button {
 .panel-section-title {
     font-size: 11px;
     font-weight: 700;
-    color: var(--color-text-sub);
     margin: 4px 0 -4px;
     letter-spacing: 0.02em;
 }
@@ -214,9 +213,6 @@ button {
     color: var(--color-text-hint);
 }
 
-/* =========================================================
-   공통 입력 요소
-   ========================================================= */
 .block-label {
     font-size: 12px;
     font-weight: 700;
@@ -253,9 +249,6 @@ input::placeholder {
     color: var(--color-text-hint);
 }
 
-/* =========================================================
-   제목/부제목 필드 블록 (인풋은 길게, 컨트롤은 짧게)
-   ========================================================= */
 .text-field-block {
     display: flex;
     flex-direction: column;
@@ -296,9 +289,6 @@ input::placeholder {
     padding: 0 6px;
 }
 
-/* =========================================================
-   스테퍼 (숫자 증감)
-   ========================================================= */
 .stepper-minimal {
     display: flex;
     align-items: center;
@@ -353,114 +343,152 @@ input::placeholder {
     margin: 0;
 }
 
-/* =========================================================
-   본문 서식 툴바 (얇고 촘촘하게)
-   ========================================================= */
-.editor-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-}
-
-.editor-toolbar button,
-.editor-toolbar select,
-.segmented-control button {
-    background: var(--color-bg-panel);
-    border: 1px solid var(--color-border);
-    color: var(--color-text-main);
-    font-size: 11.5px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    cursor: pointer;
-    height: 26px;
-    padding: 0 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-}
-
-.toolbar-dense button,
-.toolbar-dense select {
-    height: 25px;
-    font-size: 11px;
-    padding: 0 7px;
-}
-
-.toolbar-sep {
-    width: 1px;
-    height: 16px;
-    background: var(--color-border);
-    margin: 0 2px;
-    flex: 0 0 auto;
-}
-
-.editor-toolbar button:hover,
-.editor-toolbar select:hover,
-.segmented-control button:hover {
-    background: var(--color-bg-hover);
-    border-color: var(--color-border-dark);
-    color: var(--color-text-main);
-    z-index: 1;
-}
-
-.text-danger {
-    color: #b7472a !important;
-    border-color: #ecd4cc !important;
-}
-.text-danger:hover {
-    background: #fdf2ef !important;
-}
-
-.btn-block-insert {
-    color: var(--color-accent);
-    border-color: var(--color-accent-soft-border) !important;
-    background: var(--color-accent-soft) !important;
-}
-.btn-block-insert:hover {
-    background: #eaeaed !important;
-}
-
-.btn-dialogue-line,
-.btn-chat-bubble {
-    color: var(--color-text-main);
-}
-
-.toolbar-select {
-    width: 80px;
-}
-
-/* 세그먼트 컨트롤 (정렬 버튼 등) */
 .segmented-control {
     display: flex;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     overflow: hidden;
-    height: 32px;
+    background: var(--color-bg-panel);
 }
 
 .segmented-control button {
     flex: 1;
+    appearance: none;
     border: none;
-    border-radius: 0;
     border-left: 1px solid var(--color-border);
-    height: 100%;
+    background: var(--color-bg-panel);
+    color: var(--color-text-sub);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
 
 .segmented-control button:first-child {
     border-left: none;
 }
 
-.segmented-control button.active {
-    background: var(--color-accent);
-    color: var(--color-white);
+.segmented-control button:hover {
+    background: var(--color-accent-soft);
+    color: var(--color-text-main);
 }
 
-/* =========================================================
-   에디터 본문 영역
-   ========================================================= */
+.segmented-control button.active {
+    background: var(--color-text-main);
+    color: var(--color-white);
+}
+/* 1. 툴바 컨테이너 (둥근 모서리와 연한 배경) */
+.editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border-light, #e2e8f0);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+/* 2. 공통 버튼 스타일 (완만한 곡선 사각형) */
+.btn-editor-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 4px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px; /* 부드러운 곡선 네모 */
+    background: #ffffff;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+/* 버튼 호버 효과 */
+.btn-editor-pill:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+/* 3. 툴바 내 셀렉트 박스 */
+.toolbar-select {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 2px 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 11px;
+    outline: none;
+    cursor: pointer;
+}
+
+.toolbar-select:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* 4. 세로 구분선 */
+.toolbar-divider {
+    width: 1px;
+    height: 14px;
+    background: #e2e8f0;
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+/* 5. 상황별 포인트 테마 스타일 */
+.btn-editor-pill.pill-danger {
+    border-color: #fee2e2;
+    background: #fef2f2;
+    color: #ef4444;
+}
+.btn-editor-pill.pill-danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.btn-editor-pill.pill-sub {
+    color: var(--color-text-sub, #5b70be);
+}
+
+.btn-editor-pill.pill-blue {
+    border-color: #e0f2fe;
+    background: #f0f9ff;
+    color: #0369a1;
+}
+.btn-editor-pill.pill-blue:hover {
+    background: #e0f2fe;
+    border-color: #7dd3fc;
+}
+
+.btn-editor-pill.pill-green {
+    border-color: #dcfce7;
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: bold;
+}
+.btn-editor-pill.pill-green:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+}
+
+.chat-bubble .bubble-text {
+    font-size: 0.9em !important;
+    line-height: calc(var(--parent-lh, 1.5) * 0.9) !important;
+    word-break: keep-all;
+    text-align: justify;
+    display: inline-block;
+    width: 100%;
+}
+
 #textEditor {
     min-height: 150px;
     max-height: 360px;
@@ -491,9 +519,6 @@ input::placeholder {
     width: 100% !important;
 }
 
-/* =========================================================
-   필드 그리드 (라벨 위 / 인풋 아래, 2~4열)
-   ========================================================= */
 .field-row {
     display: grid;
     gap: 8px 10px;
@@ -544,9 +569,6 @@ input::placeholder {
     background: var(--color-white);
 }
 
-/* =========================================================
-   컬러 스와치 그리드
-   ========================================================= */
 .swatch-grid {
     display: grid;
     gap: 6px;
@@ -617,9 +639,6 @@ input[type="color"]::-webkit-color-swatch {
     border-radius: 3px;
 }
 
-/* =========================================================
-   체크박스 / 레인지 슬라이더
-   ========================================================= */
 .checkbox-minimal-group {
     display: flex;
     gap: 14px;
@@ -656,9 +675,7 @@ input[type="range"] {
     height: 26px;
 }
 
-/* =========================================================
-   본문 내삽입 블록 및 말풍선 (동작 로직 유지)
-   ========================================================= */
+/* 1. 대화 라인 & 인라인 블록 */
 .dialogue-line {
     position: relative;
     padding-left: 14px;
@@ -669,86 +686,9 @@ input[type="range"] {
 .dialogue-line[data-line-variant="B"] {
     border-left-color: var(--quote-line-color-b, var(--color-text-main));
 }
+
 .fade-divider-line {
     display: block;
-}
-
-.chat-bubble {
-    display: flex !important; /* !important를 추가하여 flex 정렬을 보장합니다 */
-    width: 100% !important; /* 너비도 함께 보장합니다 */
-    margin: 10px 0;
-    clear: both;
-}
-.chat-bubble.side-left {
-    justify-content: flex-start;
-}
-
-.chat-bubble.side-right {
-    justify-content: flex-end;
-}
-
-.bubble-inner {
-    position: relative;
-    display: table;
-    max-width: 78%;
-    padding: 10px 14px;
-    border-radius: 12px;
-    line-height: 1.5;
-}
-
-.chat-bubble.side-left .bubble-inner {
-    border-bottom-left-radius: 4px;
-}
-
-.chat-bubble.side-right .bubble-inner {
-    border-bottom-right-radius: 4px;
-}
-
-.bubble-speaker {
-    display: block;
-    font-size: 0.75em;
-    font-weight: 700;
-    opacity: 0.7;
-    margin-bottom: 4px;
-}
-
-.bubble-speaker[data-ph]:empty::before {
-    content: attr(data-ph);
-    opacity: 0.5;
-}
-
-#canvasTextWrapper .bubble-speaker:empty {
-    display: none;
-}
-
-.bubble-text {
-    display: inline;
-}
-
-.bubble-flip {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-panel);
-    color: var(--color-text-main);
-    font-size: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.chat-bubble.side-right .bubble-flip {
-    right: auto;
-    left: -8px;
-}
-
-#canvasTextWrapper .bubble-flip {
-    display: none !important;
 }
 
 .inline-title-block,
@@ -776,9 +716,150 @@ input[type="range"] {
     opacity: 0.4;
 }
 
-/* =========================================================
-   본문 삽입 사진 블록
-   ========================================================= */
+/* 2. 💬 말풍선 기본 구조 */
+.chat-bubble {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 12px 0;
+    position: relative;
+    width: 100% !important;
+    box-sizing: border-box;
+    clear: both;
+}
+
+/* 🟢 좌측 말풍선: 왼쪽 정렬 */
+.chat-bubble.side-left {
+    justify-content: flex-start;
+}
+
+/* 🔵 우측 말풍선: 우측 정렬 */
+.chat-bubble.side-right {
+    justify-content: flex-end;
+}
+
+/* 3. 👤 프로필 이미지 (우측 정렬 시에는 숨김) */
+.bubble-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 30%;
+    background-color: #f1f5f9;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.chat-bubble.side-right .bubble-profile {
+    display: none !important;
+}
+
+/* 4. 📝 텍스트 콘텐츠 컬럼 */
+.bubble-content-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 75%; /* 너무 꽉 차지 않도록 너비 한계 제한 */
+    box-sizing: border-box;
+    position: relative;
+}
+
+.chat-bubble.side-right .bubble-content-col {
+    align-items: flex-end;
+}
+
+/* 5. 🏷️ 상단 정보 영역 */
+.bubble-info {
+    display: flex;
+    align-items: center;
+    margin-top: -3px;
+    position: relative;
+}
+
+/* 🔵 우측 말풍선일 때는 이름 텍스트만 가리고, 조작 버튼 공간은 유지 */
+.chat-bubble.side-right .bubble-speaker {
+    display: none !important;
+}
+.bubble-speaker {
+    font-weight: 700;
+    font-size: 0.8em;
+}
+
+/* 6. ⚙️ 작고 동그란 원형 플로팅 컨트롤 버튼 (우측 정렬 시에도 절대 유지) */
+.bubble-action-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border, #e2e8f0);
+    background: var(--color-bg-panel, #ffffff);
+    color: var(--color-text-main, #64748b);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease;
+    opacity: 0.4; /* 평소 투명도 */
+    padding: 0;
+}
+
+.bubble-action-btn:hover {
+    opacity: 1;
+    background: var(--color-bg-hover, #f8fafc);
+    transform: scale(1.05);
+}
+
+.bubble-delete-btn:hover {
+    color: #ef4444;
+    border-color: #fecaca;
+    background: #fee2e2;
+}
+
+.bubble-inner {
+    position: relative;
+    display: inline-block;
+    padding: 12px 17px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+    max-width: 100%;
+}
+
+.chat-bubble.side-left .bubble-inner {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 10px;
+}
+
+.chat-bubble.side-right .bubble-inner {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 2px;
+}
+
+#canvasTextWrapper .bubble-action-btn {
+    display: none !important;
+}
+
+#canvasTextWrapper .bubble-speaker:empty {
+    display: none;
+}
+/* ❌ 프사 표시 체크 해제 시: 좌측 말풍선의 프사 영역 완전히 숨김 */
+.hide-profiles .bubble-profile {
+    display: none !important;
+}
+
+/* ❌ 이름 표시 체크 해제 시: 좌측 말풍선의 이름 영역 숨김 */
+.hide-names .bubble-speaker {
+    display: none !important;
+}
+
+/* 프사나 이름이 숨겨졌을 때 조작 버튼들이 공중에 뜨지 않도록 마진 및 정렬 조정 */
+.hide-names .bubble-info {
+    margin-bottom: 0px;
+}
+
 .content-image-block {
     position: relative;
     width: 100% !important;
@@ -832,9 +913,6 @@ input[type="range"] {
     cursor: default;
 }
 
-/* =========================================================
-   우측 캔버스 (무대) - 심플한 무채색 도트 패턴
-   ========================================================= */
 .stage {
     position: relative;
     background: var(--color-bg-app);
@@ -913,9 +991,6 @@ input[type="range"] {
     margin-top: 35px;
 }
 
-/* =========================================================
-   프리셋
-   ========================================================= */
 .preset-save-box-minimal {
     display: flex;
     gap: 8px;
@@ -987,9 +1062,6 @@ input[type="range"] {
     background-color: var(--color-text-main);
 }
 
-/* =========================================================
-   반응형 모바일 (상단 미리보기, 하단 설정 배치 전환)
-   ========================================================= */
 @media (max-width: 900px) {
     .app-body {
         display: flex;
