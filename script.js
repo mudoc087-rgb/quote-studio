@@ -1301,17 +1301,34 @@ function renderMembers() {
         fileInput.accept = "image/*";
         fileInput.style.display = "none";
         fileInput.addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    member.profile = ev.target.result;
-                    renderMembers();
-                    updateCanvas();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                
+                const maxSize = 100;
+                canvas.width = maxSize;
+                canvas.height = maxSize;
+                
+                const size = Math.min(img.width, img.height);
+                const sx = (img.width - size) / 2;
+                const sy = (img.height - size) / 2;
+                
+                ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
+                
+                member.profile = canvas.toDataURL("image/jpeg", 0.7);
+                renderMembers();
+                updateCanvas();
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
         const profileBtn = document.createElement("button");
         profileBtn.style.width = "24px";
