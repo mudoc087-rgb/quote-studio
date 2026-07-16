@@ -6,8 +6,6 @@ window.stepInput = function (id, step, precision = 1) {
     if (typeof updateCanvas === "function") updateCanvas();
 };
 
-// 선택 영역(또는 커서가 위치한 블록)의 모든 서식을 지우고 완전한 기본 텍스트로 되돌린다.
-// 굵기·기울임·보조색·형광펜·따옴표/괄호 강조색·강조선·대화 버블을 전부 제거한다.
 document.getElementById("btnClearHighlight").addEventListener("click", () => {
     const editor = document.getElementById("textEditor");
     if (!editor) return;
@@ -18,12 +16,13 @@ document.getElementById("btnClearHighlight").addEventListener("click", () => {
 
     if (!editor.contains(range.commonAncestorContainer)) return;
 
-    // 선택 영역이 없다면(커서만 있다면) 커서가 속한 블록 전체를 대상으로 한다.
     if (range.collapsed) {
         let node = range.startContainer;
         let el = node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
 
-        let block = el.closest(".dialogue-line, .chat-bubble, .inline-title-block, .inline-subtitle-block, .content-box");
+        let block = el.closest(
+            ".dialogue-line, .chat-bubble, .inline-title-block, .inline-subtitle-block, .content-box"
+        );
         if (!block) {
             let n = el;
             while (n && n.parentNode !== editor) n = n.parentNode;
@@ -182,7 +181,10 @@ window.savePreset = function () {
         "subtitleWeight",
         "enableTextShadow",
         "textShadowColor",
-        "textShadowBlur"
+        "textShadowBlur",
+        "autoParenBreak",
+        "toggleProfile",
+        "toggleName"
     ];
 
     const presetData = {};
@@ -196,6 +198,10 @@ window.savePreset = function () {
             presetData[id] = el.value;
         }
     });
+
+    if (typeof chatMembers !== "undefined") {
+        presetData["savedMembers"] = chatMembers;
+    }
 
     const presets = getPresets();
     presets[name] = presetData;
@@ -212,6 +218,8 @@ function applyPreset(name) {
     if (!data) return;
 
     Object.keys(data).forEach((id) => {
+        if (id === "savedMembers") return;
+
         const el = document.getElementById(id);
         if (!el) return;
 
@@ -234,6 +242,27 @@ function applyPreset(name) {
                 }
             });
         }
+    }
+
+    if (data["savedMembers"] && Array.isArray(data["savedMembers"]) && typeof chatMembers !== "undefined") {
+        chatMembers = JSON.parse(JSON.stringify(data["savedMembers"]));
+        if (typeof renderMembers === "function") {
+            renderMembers();
+        }
+    }
+
+    const editorContainer = document.getElementById("textEditor");
+    const canvasContainer = document.getElementById("canvasTextWrapper");
+    const hasProfile = document.getElementById("toggleProfile")?.checked ?? true;
+    const hasName = document.getElementById("toggleName")?.checked ?? true;
+
+    if (editorContainer) {
+        editorContainer.classList.toggle("hide-profiles", !hasProfile);
+        editorContainer.classList.toggle("hide-names", !hasName);
+    }
+    if (canvasContainer) {
+        canvasContainer.classList.toggle("hide-profiles", !hasProfile);
+        canvasContainer.classList.toggle("hide-names", !hasName);
     }
 
     if (typeof syncLiveHighlights === "function") {
