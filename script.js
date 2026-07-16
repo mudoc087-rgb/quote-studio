@@ -707,13 +707,29 @@ document.getElementById("btnQuoteColorB").addEventListener("click", () => {
     if (!selection.rangeCount || selection.isCollapsed) return;
     const range = selection.getRangeAt(0);
     if (!els.editor.contains(range.commonAncestorContainer)) return;
+    const container = document.createElement("div");
+    container.appendChild(range.cloneContents());
+    const nestedSpans = container.querySelectorAll("span");
+    nestedSpans.forEach(s => {
+        s.removeAttribute("data-manual-quote-color");
+        s.style.color = "";
+    });
+    const fragment = range.extractContents();
 
+    const innerSpans = fragment.querySelectorAll ? fragment.querySelectorAll("span") : [];
+    if (innerSpans.length > 0) {
+        innerSpans.forEach(s => {
+            s.setAttribute("data-manual-quote-color", "B");
+            s.style.color = els.quoteColorB ? els.quoteColorB.value : "#efdbff";
+        });
+    }
     const span = document.createElement("span");
     span.setAttribute("data-manual-quote-color", "B");
     span.style.color = els.quoteColorB ? els.quoteColorB.value : "#efdbff";
     span.style.fontWeight = "inherit";
     span.style.fontFamily = "inherit";
-    span.appendChild(range.extractContents());
+    
+    span.appendChild(fragment);
     range.insertNode(span);
 
     selection.removeAllRanges();
