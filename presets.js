@@ -85,12 +85,16 @@ document.getElementById("btnClearHighlight").addEventListener("click", () => {
 
     if (typeof updateCanvas === "function") updateCanvas();
 });
-
 const PRESET_STORAGE_KEY = "excerpt_maker_presets_v2";
 
 function getPresets() {
-    const presets = localStorage.getItem(PRESET_STORAGE_KEY);
-    return presets ? JSON.parse(presets) : {};
+    try {
+        const presets = localStorage.getItem(PRESET_STORAGE_KEY);
+        return presets ? JSON.parse(presets) : {};
+    } catch (e) {
+        console.error("LocalStorage 읽기 실패:", e);
+        return {};
+    }
 }
 
 function renderPresets() {
@@ -203,13 +207,25 @@ window.savePreset = function () {
         presetData["savedMembers"] = chatMembers;
     }
 
-    const presets = getPresets();
-    presets[name] = presetData;
-    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+    // try-catch 구문으로 감싸서 에러가 나도 먹통이 되지 않게 만듭니다.
+    try {
+        const presets = getPresets();
+        presets[name] = presetData;
+        localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
 
-    nameInput.value = "";
-    renderPresets();
-    alert(`'${name}' 디자인 프리셋이 저장되었습니다.`);
+        nameInput.value = "";
+        renderPresets();
+        alert(`'${name}' 디자인 프리셋이 저장되었습니다.`);
+    } catch (error) {
+        console.error("프리셋 저장 실패:", error);
+        
+        // 브라우저 저장 한계(5MB)를 초과했을 때 친절하게 원인을 안내합니다.
+        if (error.name === "QuotaExceededError" || error.code === 22) {
+            alert("❌ 저장 용량 초과!\n\n등록하신 인물의 프로필 이미지 용량이 너무 커서 브라우저 저장공간(5MB)을 넘었습니다.\n인물 관리에서 고용량 사진 대신 저용량 이미지나 기본 아이콘으로 교체한 뒤 다시 시도해 주세요.");
+        } else {
+            alert(`❌ 저장에 실패했습니다.\n에러 내용: ${error.message}`);
+        }
+    }
 };
 
 function applyPreset(name) {
