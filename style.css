@@ -740,8 +740,8 @@ input[type="range"] {
 
 /* 3. 👤 프로필 이미지 (우측 정렬 시에는 숨김) */
 .bubble-profile {
-    width: 40px;
-    height: 40px;
+    width: 3em;
+    height: 3em;
     border-radius: 30%;
     background-color: #f1f5f9;
     background-size: cover;
