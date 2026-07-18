@@ -82,7 +82,6 @@ button {
     z-index: 10;
 }
 
-/* 상단 버튼 영역 */
 .header-actions {
     display: flex;
     gap: 8px;
@@ -94,7 +93,7 @@ button {
     z-index: 20;
 }
 
-/* 공통 버튼 디자인 */
+
 .btn {
     flex: 1;
     appearance: none;
@@ -138,7 +137,7 @@ button {
     padding-bottom: 48px;
 }
 
-/* 아코디언 섹션 */
+
 .panel-section {
     border-bottom: 1px solid var(--color-border-light);
 }
@@ -378,7 +377,7 @@ input::placeholder {
     background: var(--color-text-main);
     color: var(--color-white);
 }
-/* 1. 툴바 컨테이너 (둥근 모서리와 연한 배경) */
+
 .editor-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -390,7 +389,7 @@ input::placeholder {
     margin-bottom: 8px;
 }
 
-/* 2. 공통 버튼 스타일 (완만한 곡선 사각형) */
+
 .btn-editor-pill {
     display: inline-flex;
     align-items: center;
@@ -398,7 +397,7 @@ input::placeholder {
     height: 24px;
     padding: 4px 8px;
     border: 1px solid #e2e8f0;
-    border-radius: 6px; /* 부드러운 곡선 네모 */
+    border-radius: 6px;
     background: #ffffff;
     color: #334155;
     font-size: 11px;
@@ -408,14 +407,13 @@ input::placeholder {
     transition: all 0.15s ease;
 }
 
-/* 버튼 호버 효과 */
 .btn-editor-pill:hover {
     background: #f1f5f9;
     border-color: #cbd5e1;
     color: #0f172a;
 }
 
-/* 3. 툴바 내 셀렉트 박스 */
+
 .toolbar-select {
     display: inline-flex;
     align-items: center;
@@ -435,7 +433,7 @@ input::placeholder {
     border-color: #cbd5e1;
 }
 
-/* 4. 세로 구분선 */
+
 .toolbar-divider {
     width: 1px;
     height: 14px;
@@ -444,7 +442,6 @@ input::placeholder {
     flex-shrink: 0;
 }
 
-/* 5. 상황별 포인트 테마 스타일 */
 .btn-editor-pill.pill-danger {
     border-color: #fee2e2;
     background: #fef2f2;
@@ -552,7 +549,6 @@ input::placeholder {
     white-space: nowrap;
 }
 
-/* 배경 이미지 설정 카드 */
 .field-card {
     display: flex;
     flex-direction: column;
@@ -675,7 +671,6 @@ input[type="range"] {
     height: 26px;
 }
 
-/* 1. 대화 라인 & 인라인 블록 */
 .dialogue-line {
     position: relative;
     padding-left: 14px;
@@ -716,7 +711,6 @@ input[type="range"] {
     opacity: 0.4;
 }
 
-/* 2. 💬 말풍선 기본 구조 */
 .chat-bubble {
     display: flex !important;
     align-items: flex-start;
@@ -728,20 +722,17 @@ input[type="range"] {
     clear: both;
 }
 
-/* 🟢 좌측 말풍선: 왼쪽 정렬 */
 .chat-bubble.side-left {
     justify-content: flex-start;
 }
 
-/* 🔵 우측 말풍선: 우측 정렬 */
 .chat-bubble.side-right {
     justify-content: flex-end;
 }
 
-/* 3. 👤 프로필 이미지 (우측 정렬 시에는 숨김) */
 .bubble-profile {
-    width: 3em;
-    height: 3em;
+    width: 40px;
+    height: 40px;
     border-radius: 30%;
     background-color: #f1f5f9;
     background-size: cover;
@@ -754,12 +745,11 @@ input[type="range"] {
     display: none !important;
 }
 
-/* 4. 📝 텍스트 콘텐츠 컬럼 */
 .bubble-content-col {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    max-width: 75%; /* 너무 꽉 차지 않도록 너비 한계 제한 */
+    max-width: 75%;
     box-sizing: border-box;
     position: relative;
 }
@@ -768,7 +758,6 @@ input[type="range"] {
     align-items: flex-end;
 }
 
-/* 5. 🏷️ 상단 정보 영역 */
 .bubble-info {
     display: flex;
     align-items: center;
@@ -776,7 +765,6 @@ input[type="range"] {
     position: relative;
 }
 
-/* 🔵 우측 말풍선일 때는 이름 텍스트만 가리고, 조작 버튼 공간은 유지 */
 .chat-bubble.side-right .bubble-speaker {
     display: none !important;
 }
@@ -785,7 +773,6 @@ input[type="range"] {
     font-size: 0.8em;
 }
 
-/* 6. ⚙️ 작고 동그란 원형 플로팅 컨트롤 버튼 (우측 정렬 시에도 절대 유지) */
 .bubble-action-btn {
     width: 20px;
     height: 20px;
@@ -800,7 +787,7 @@ input[type="range"] {
     justify-content: center;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.15s ease;
-    opacity: 0.4; /* 평소 투명도 */
+    opacity: 0.4;
     padding: 0;
 }
 
@@ -845,17 +832,17 @@ input[type="range"] {
 #canvasTextWrapper .bubble-speaker:empty {
     display: none;
 }
-/* ❌ 프사 표시 체크 해제 시: 좌측 말풍선의 프사 영역 완전히 숨김 */
+
 .hide-profiles .bubble-profile {
     display: none !important;
 }
 
-/* ❌ 이름 표시 체크 해제 시: 좌측 말풍선의 이름 영역 숨김 */
+
 .hide-names .bubble-speaker {
     display: none !important;
 }
 
-/* 프사나 이름이 숨겨졌을 때 조작 버튼들이 공중에 뜨지 않도록 마진 및 정렬 조정 */
+
 .hide-names .bubble-info {
     margin-bottom: 0px;
 }
@@ -931,7 +918,7 @@ input[type="range"] {
     box-shadow: var(--shadow-canvas);
     overflow: hidden;
     background: var(--color-white);
-    border-radius: 0; /* 단정한 종이 형태 유지 */
+    border-radius: 0;
 }
 
 .bg-image-layer {
@@ -1061,15 +1048,47 @@ input[type="range"] {
 .btn-compact:hover {
     background-color: var(--color-text-main);
 }
+.page-break-line {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 20px;
+    margin: 24px 0;
+    user-select: none;
+}
+
+.page-break-line::before,
+.page-break-line::after {
+    content: "";
+    flex: 1;
+    border-top: 2px dotted #cbd5e1;
+}
+
+.page-break-scissors {
+    display: inline-block;
+    padding: 0 10px;
+    font-size: 14px;
+    color: #94a3b8;
+    transform: rotate(90deg);
+}
+
+.layout-2column #canvasTextWrapper {
+    column-count: 2;
+    column-gap: 50px;
+    column-rule: 1px solid rgba(0, 0, 0, 0.08);
+    text-align: justify;
+}
 
 @media (max-width: 900px) {
     .app-body {
         display: flex;
-        flex-direction: column-reverse; /* 역순 정렬로 우측 무대(stage)가 무조건 위로 배치 */
+        flex-direction: column-reverse; 
         height: auto;
     }
     .stage {
-        flex: 0 0 45vh; /* 상단 미리보기 영역 고정 비율 제공 */
+        flex: 0 0 45vh;
         width: 100%;
         border-bottom: 1px solid var(--color-border);
     }
