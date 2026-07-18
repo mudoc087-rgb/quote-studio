@@ -32,7 +32,10 @@
                 <aside class="control-panel">
                     <div class="header-actions">
                         <button id="btnCopy" class="btn btn-ghost">이미지 복사</button>
-                        <button id="btnSave" class="btn btn-primary">이미지 저장</button>
+                        <button id="btnSave" class="btn btn-primary">통합 저장</button>
+                        <button id="btnSplitSave" class="btn btn-primary" style="background-color: #6cb13c">
+                            분할 저장
+                        </button>
                     </div>
                     <div class="panel-scroll">
                         <!-- 1. 콘텐츠 -->
@@ -248,7 +251,9 @@
                                         </button>
                                         <button id="btnAddImage" class="btn-editor-pill pill-blue">+ 사진</button>
                                         <button id="btnFadeLine" class="btn-editor-pill pill-blue">+ 구분선</button>
-
+                                        <button id="btnPageBreak" class="btn-editor-pill pill-blue">
+                                            + 페이지 분할선
+                                        </button>
                                         <div class="toolbar-divider"></div>
 
                                         <button id="btnQuoteColorB" class="btn-editor-pill" title="따옴표 B색 적용">
@@ -357,6 +362,13 @@
                                             <option value="9:16">9 : 16</option>
                                             <option value="free" selected>자동 조절</option>
                                         </select>
+                                        <div class="field-col">
+                                            <label for="layoutSelect">열 레이아웃</label>
+                                            <select id="layoutSelect">
+                                                <option value="1column" selected>일반 (1열)</option>
+                                                <option value="2column">책 내지 (가로 2열)</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="field-col" id="customWidthArea">
                                         <label for="canvasWidth">지정 너비 (px)</label>
@@ -364,6 +376,24 @@
                                             <button onclick="stepInput('canvasWidth', -50)">-</button>
                                             <input type="number" id="canvasWidth" value="600" />
                                             <button onclick="stepInput('canvasWidth', 50)">+</button>
+                                        </div>
+                                        <div
+                                            class="field-col"
+                                            id="midGapArea"
+                                            style="display: none; grid-column: span 2; margin-top: 8px">
+                                            <label for="midGap" style="display: flex; justify-content: space-between">
+                                                <span>책 내지 중간 여백</span>
+                                                <span id="midGapVal" style="font-weight: bold; color: #10b981"
+                                                    >40px</span
+                                                >
+                                            </label>
+                                            <input
+                                                type="range"
+                                                id="midGap"
+                                                min="10"
+                                                max="150"
+                                                value="40"
+                                                style="width: 100%; cursor: pointer" />
                                         </div>
                                     </div>
                                 </div>
