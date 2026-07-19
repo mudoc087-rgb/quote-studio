@@ -64,7 +64,7 @@ const els = {
 
     autoParenBreak: document.getElementById("autoParenBreak"),
     layoutSelect: document.getElementById("layoutSelect"),
-    midGap: document.getElementById("midGap") 
+    midGap: document.getElementById("midGap") // 새 여백 조절 바 등록
 };
 
 function applyBubbleColors(container) {
@@ -202,7 +202,7 @@ function updateCanvas() {
     const gapValue = els.midGap ? els.midGap.value : 40;
 
     if (midGapVal) midGapVal.textContent = `${gapValue}px`;
-
+    // 1. 전체 캔버스(captureArea)에 강제로 먹혀있던 Grid 속성 제거
     if (midGapArea) midGapArea.style.display = is2Col ? "block" : "none";
     els.captureArea.classList.remove("layout-2column");
     els.captureArea.style.display = "";
@@ -341,7 +341,7 @@ function updateCanvas() {
         if (is2Col) {
             textWrapper.style.columnCount = "2";
             textWrapper.style.columnGap = `${gapValue}px`;
-            textWrapper.style.columnRule = "none";
+            textWrapper.style.columnRule = "none"; // 세로줄 완전히 없애기
         } else {
             textWrapper.style.columnCount = "1";
             textWrapper.style.columnGap = "normal";
@@ -731,6 +731,7 @@ document.getElementById("btnQuoteColorB").addEventListener("click", () => {
     container.appendChild(range.cloneContents());
     const nestedSpans = container.querySelectorAll("span");
     nestedSpans.forEach((s) => {
+        // 기존 스타일이나 속성을 초기화하여 텍스트만 남깁니다.
         s.removeAttribute("data-manual-quote-color");
         s.style.color = "";
     });
@@ -764,6 +765,18 @@ document.getElementById("btnQuoteColorB").addEventListener("click", () => {
     updateCanvas();
 });
 
+let savedHighlightRange = null;
+
+document.addEventListener("selectionchange", () => {
+    const selection = window.getSelection();
+    if (selection.rangeCount && !selection.getRangeAt(0).collapsed) {
+        const range = selection.getRangeAt(0);
+        if (els.editor.contains(range.commonAncestorContainer)) {
+            savedHighlightRange = range.cloneRange();
+        }
+    }
+});
+
 document.getElementById("selHighlight").addEventListener("change", function () {
     const val = this.value;
     if (!val) return;
@@ -771,7 +784,19 @@ document.getElementById("selHighlight").addEventListener("change", function () {
     if (val === "A") color = els.hlColorA.value;
     if (val === "B") color = els.hlColorB.value;
     if (val === "C") color = els.hlColorC.value;
-    document.execCommand("backColor", false, color);
+
+    if (savedHighlightRange) {
+        try {
+            const span = document.createElement("span");
+            span.style.backgroundColor = color;
+            span.appendChild(savedHighlightRange.extractContents());
+            savedHighlightRange.insertNode(span);
+        } catch (e) {
+            console.error("하이라이트 적용 실패:", e);
+        }
+        savedHighlightRange = null;
+    }
+
     this.value = "";
     updateCanvas();
 });
@@ -1226,63 +1251,74 @@ els.editor.addEventListener(
     },
     { passive: false }
 );
-
 let imgDragState = null;
 
-els.editor.addEventListener("mousedown", (e) => {
+function getEventPoint(e) {
+    if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if (e.changedTouches && e.changedTouches.length > 0)
+        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    return { x: e.clientX, y: e.clientY };
+}
+
+function handleImgDragStart(e) {
     const resizeHandle = e.target.closest(".content-image-resize-handle");
     const inner = e.target.closest(".content-image-inner");
+    const point = getEventPoint(e);
 
     if (resizeHandle) {
         const block = resizeHandle.parentElement;
-        imgDragState = {
-            type: "resize",
-            block: block,
-            startY: e.clientY,
-            startHeight: block.getBoundingClientRect().height
-        };
+        imgDragState = { type: "resize", block, startY: point.y, startHeight: block.getBoundingClientRect().height };
         e.preventDefault();
     } else if (inner) {
         const block = inner.parentElement;
         imgDragState = {
             type: "move",
-            block: block,
-            inner: inner,
-            startX: e.clientX,
-            startY: e.clientY,
+            block,
+            inner,
+            startX: point.x,
+            startY: point.y,
             startPosX: parseFloat(block.dataset.posX || "50"),
             startPosY: parseFloat(block.dataset.posY || "50")
         };
         e.preventDefault();
     }
-});
+}
 
-document.addEventListener("mousemove", (e) => {
+function handleImgDragMove(e) {
     if (!imgDragState) return;
+    const point = getEventPoint(e);
 
     if (imgDragState.type === "resize") {
-        const deltaY = e.clientY - imgDragState.startY;
-        const newHeight = Math.max(60, imgDragState.startHeight + deltaY);
-        imgDragState.block.style.height = `${newHeight}px`;
+        const deltaY = point.y - imgDragState.startY;
+        imgDragState.block.style.height = `${Math.max(60, imgDragState.startHeight + deltaY)}px`;
     } else if (imgDragState.type === "move") {
         const rect = imgDragState.block.getBoundingClientRect();
-        const deltaX = e.clientX - imgDragState.startX;
-        const deltaY = e.clientY - imgDragState.startY;
+        const deltaX = point.x - imgDragState.startX;
+        const deltaY = point.y - imgDragState.startY;
         const posX = Math.min(100, Math.max(0, imgDragState.startPosX - (deltaX / rect.width) * 100));
         const posY = Math.min(100, Math.max(0, imgDragState.startPosY - (deltaY / rect.height) * 100));
         imgDragState.block.dataset.posX = String(posX);
         imgDragState.block.dataset.posY = String(posY);
         imgDragState.inner.style.backgroundPosition = `${posX}% ${posY}%`;
     }
-});
+    if (e.cancelable) e.preventDefault();
+}
 
-document.addEventListener("mouseup", () => {
+function handleImgDragEnd() {
     if (imgDragState) {
         imgDragState = null;
         updateCanvas();
     }
-});
+}
 
+els.editor.addEventListener("mousedown", handleImgDragStart);
+els.editor.addEventListener("touchstart", handleImgDragStart, { passive: false });
+
+document.addEventListener("mousemove", handleImgDragMove);
+document.addEventListener("touchmove", handleImgDragMove, { passive: false });
+
+document.addEventListener("mouseup", handleImgDragEnd);
+document.addEventListener("touchend", handleImgDragEnd);
 /* =========================================================
    [개선 완료] 채팅 멤버 관리, 접기, 대본 파싱 및 독립 이벤트 로직
    ========================================================= */
@@ -2042,11 +2078,13 @@ function normalizeParagraphs(container) {
     if (container.childNodes.length === 0) container.innerHTML = "<div><br></div>";
 }
 
+// 2. 레이아웃 및 중간 여백 슬라이더 변경 시 실시간 반영
 document.getElementById("layoutSelect").addEventListener("change", updateCanvas);
 if (els.midGap) {
     els.midGap.addEventListener("input", updateCanvas);
 }
 
+// 1. 페이지 분할선 삽입 버튼 이벤트
 document.getElementById("btnPageBreak").addEventListener("click", () => {
     els.editor.focus();
 
@@ -2091,6 +2129,7 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
 
     prepareCanvasForCapture(els.captureArea);
 
+    // 분할선이 문단(div) 안쪽에 중첩돼 있어도 textWrapper의 "직계 자식" 레벨까지 끌어올림
     function promoteDividersToTopLevel(root) {
         const dividers = Array.from(root.querySelectorAll(".page-break-line"));
         dividers.forEach((divider) => {
@@ -2121,6 +2160,7 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
         });
     }
 
+    // 실제 편집화면은 안 건드리고, 복제본에서만 분할선을 최상위로 끌어올려 분할 처리
     const workWrapper = textWrapper.cloneNode(true);
     promoteDividersToTopLevel(workWrapper);
 
@@ -2138,6 +2178,7 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
     }
     if (currentChunk.length > 0) chunks.push(currentChunk);
 
+    // 분할선 뒤에 자동으로 붙는 빈 <br>이 다음 페이지 상단 여백을 깨는 것 방지
     chunks.forEach((chunk, idx) => {
         if (idx === 0 || chunk.length === 0) return;
         let first = chunk[0];
@@ -2159,6 +2200,7 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
     console.log("분할된 페이지 수:", chunks.length);
 
     const captureWidth = els.captureArea.offsetWidth;
+    const zip = new JSZip();
 
     for (let i = 0; i < chunks.length; i++) {
         const clone = els.captureArea.cloneNode(true);
@@ -2187,11 +2229,7 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
             if (cloneSubtitle) cloneSubtitle.style.display = "none";
         }
 
-        const actionButtons = clone.querySelectorAll(".bubble-action-btn");
-        actionButtons.forEach((btn) => {
-            btn.style.display = "none";
-        });
-
+        clone.querySelectorAll(".bubble-action-btn").forEach((btn) => (btn.style.display = "none"));
 
         document.body.appendChild(clone);
 
@@ -2202,17 +2240,22 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
                 backgroundColor: null,
                 scale: 2
             });
-
-            const link = document.createElement("a");
-            link.download = `excerpt_split_${Date.now()}_part${i + 1}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            zip.file(`excerpt_part${i + 1}.png`, blob);
         } catch (err) {
             console.error(`분할 캡처 중 오류 발생 (페이지 ${i + 1}):`, err);
         } finally {
             document.body.removeChild(clone);
         }
     }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const zipUrl = URL.createObjectURL(zipBlob);
+    const zipLink = document.createElement("a");
+    zipLink.download = `excerpt_split_${Date.now()}.zip`;
+    zipLink.href = zipUrl;
+    zipLink.click();
+    URL.revokeObjectURL(zipUrl);
 
     restoreCanvasAfterCapture(els.captureArea);
 });
