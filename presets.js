@@ -85,8 +85,10 @@ document.getElementById("btnClearHighlight").addEventListener("click", () => {
 
     if (typeof updateCanvas === "function") updateCanvas();
 });
+
 const PRESET_STORAGE_KEY = "excerpt_maker_presets_v2";
 
+// 1. 에러 안전장치를 추가한 불러오기 함수
 function getPresets() {
     try {
         const presets = localStorage.getItem(PRESET_STORAGE_KEY);
@@ -134,6 +136,7 @@ function renderPresets() {
     });
 }
 
+// 2. 용량 초과 에러(먹통 현상)를 완벽하게 차단하고 에러창을 띄워주는 저장 함수
 window.savePreset = function () {
     const nameInput = document.getElementById("presetNameInput");
     const name = nameInput.value.trim();
@@ -146,6 +149,13 @@ window.savePreset = function () {
     const targetIds = [
         "ratioSelect",
         "canvasWidth",
+        "layoutSelect",
+        "midGap",
+        "titleInput",
+        "creatorInput",
+        "infoMarginTop",
+        "paddingY",
+        "paddingX",
         "paddingY",
         "paddingX",
         "bgType",
@@ -218,10 +228,12 @@ window.savePreset = function () {
         alert(`'${name}' 디자인 프리셋이 저장되었습니다.`);
     } catch (error) {
         console.error("프리셋 저장 실패:", error);
-        
+
         // 브라우저 저장 한계(5MB)를 초과했을 때 친절하게 원인을 안내합니다.
         if (error.name === "QuotaExceededError" || error.code === 22) {
-            alert("❌ 저장 용량 초과!\n\n등록하신 인물의 프로필 이미지 용량이 너무 커서 브라우저 저장공간(5MB)을 넘었습니다.\n인물 관리에서 고용량 사진 대신 저용량 이미지나 기본 아이콘으로 교체한 뒤 다시 시도해 주세요.");
+            alert(
+                "❌ 저장 용량 초과!\n\n등록하신 인물의 프로필 이미지 용량이 너무 커서 브라우저 저장공간(5MB)을 넘었습니다.\n인물 관리에서 고용량 사진 대신 저용량 이미지나 기본 아이콘으로 교체한 뒤 다시 시도해 주세요."
+            );
         } else {
             alert(`❌ 저장에 실패했습니다.\n에러 내용: ${error.message}`);
         }
