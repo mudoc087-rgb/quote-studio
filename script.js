@@ -1222,8 +1222,18 @@ function insertImageBlock(dataUrl) {
     resizeHandle.className = "content-image-resize-handle";
     resizeHandle.setAttribute("contenteditable", "false");
 
+    const resizeHandleLeft = document.createElement("div");
+    resizeHandleLeft.className = "content-image-resize-handle-left";
+    resizeHandleLeft.setAttribute("contenteditable", "false");
+
+    const resizeHandleRight = document.createElement("div");
+    resizeHandleRight.className = "content-image-resize-handle-right";
+    resizeHandleRight.setAttribute("contenteditable", "false");
+
     block.appendChild(inner);
     block.appendChild(resizeHandle);
+    block.appendChild(resizeHandleLeft);
+    block.appendChild(resizeHandleRight);
 
     if (afterBlock && afterBlock.parentNode === els.editor) {
         els.editor.insertBefore(block, afterBlock);
@@ -1262,10 +1272,20 @@ function getEventPoint(e) {
 
 function handleImgDragStart(e) {
     const resizeHandle = e.target.closest(".content-image-resize-handle");
+    const resizeHandleH = e.target.closest(".content-image-resize-handle-left, .content-image-resize-handle-right");
     const inner = e.target.closest(".content-image-inner");
     const point = getEventPoint(e);
 
-    if (resizeHandle) {
+    if (resizeHandleH) {
+        const block = resizeHandleH.parentElement;
+        imgDragState = {
+            type: "resize-width",
+            block,
+            startX: point.x,
+            startWidth: block.getBoundingClientRect().width
+        };
+        e.preventDefault();
+    } else if (resizeHandle) {
         const block = resizeHandle.parentElement;
         imgDragState = { type: "resize", block, startY: point.y, startHeight: block.getBoundingClientRect().height };
         e.preventDefault();
@@ -1291,6 +1311,12 @@ function handleImgDragMove(e) {
     if (imgDragState.type === "resize") {
         const deltaY = point.y - imgDragState.startY;
         imgDragState.block.style.height = `${Math.max(60, imgDragState.startHeight + deltaY)}px`;
+    } else if (imgDragState.type === "resize-width") {
+        const deltaX = point.x - imgDragState.startX;
+        const containerWidth = imgDragState.block.parentElement.getBoundingClientRect().width;
+        const minWidth = containerWidth * 0.3;
+        const newWidth = Math.min(containerWidth, Math.max(minWidth, imgDragState.startWidth + deltaX * 2));
+        imgDragState.block.style.width = `${newWidth}px`;
     } else if (imgDragState.type === "move") {
         const rect = imgDragState.block.getBoundingClientRect();
         const deltaX = point.x - imgDragState.startX;
@@ -1369,7 +1395,7 @@ function renderMembers() {
                         const canvas = document.createElement("canvas");
                         const ctx = canvas.getContext("2d");
 
-                        const maxSize = 100;
+                        const maxSize = 200;
                         canvas.width = maxSize;
                         canvas.height = maxSize;
 
@@ -1379,7 +1405,7 @@ function renderMembers() {
 
                         ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
 
-                        member.profile = canvas.toDataURL("image/jpeg", 0.7);
+                        member.profile = canvas.toDataURL("image/jpeg", 0.85);
                         renderMembers();
                         updateCanvas();
                     };
