@@ -514,8 +514,8 @@ input::placeholder {
     color: var(--color-text-hint);
 }
 
-#textEditor > div,
-#canvasTextWrapper > div {
+#textEditor > div:not(.content-image-block),
+#canvasTextWrapper > div:not(.content-image-block) {
     width: 100% !important;
 }
 
@@ -759,7 +759,7 @@ input[type="range"] {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    max-width: 75%; /* 너무 꽉 차지 않도록 너비 한계 제한 */
+    max-width: 75%; 
     box-sizing: border-box;
     position: relative;
 }
@@ -862,9 +862,9 @@ input[type="range"] {
 
 .content-image-block {
     position: relative;
-    width: 100% !important;
+    width: 100%;
     overflow: hidden;
-    margin: 10px 0;
+    margin: 10px auto;
     background: #e5e5e5;
     border-radius: 15px;
     user-select: none;
@@ -906,7 +906,40 @@ input[type="range"] {
     background: rgba(0, 0, 0, 0.25);
     border-radius: 2px;
 }
+.content-image-resize-handle-left,
+.content-image-resize-handle-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: ew-resize;
+    z-index: 3;
+    touch-action: none;
+}
+.content-image-resize-handle-left {
+    left: -5px;
+}
+.content-image-resize-handle-right {
+    right: -5px;
+}
 
+.content-image-resize-handle-left::after,
+.content-image-resize-handle-right::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    width: 4px;
+    height: 36px;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+}
+
+#canvasTextWrapper .content-image-resize-handle-left,
+#canvasTextWrapper .content-image-resize-handle-right {
+    display: none !important;
+}
 #canvasTextWrapper .content-image-resize-handle {
     display: none !important;
 }
@@ -1089,22 +1122,22 @@ input[type="range"] {
     transform: rotate(90deg);
 }
 
-/* 화면 프리뷰에서 책 내지(2열) 모드일 때 캔버스 자체를 두 개처럼 시각화 */
+
 .layout-2column #canvasTextWrapper {
     column-count: 2;
-    column-gap: 50px; /* 양쪽 페이지 여백 간격 */
-    column-rule: 1px solid rgba(0, 0, 0, 0.08); /* 중앙 바인딩 선 */
+    column-gap: 50px;
+    column-rule: 1px solid rgba(0, 0, 0, 0.08);
     text-align: justify;
 }
 
 @media (max-width: 900px) {
     .app-body {
         display: flex;
-        flex-direction: column-reverse; /* 역순 정렬로 우측 무대(stage)가 무조건 위로 배치 */
+        flex-direction: column-reverse; 
         height: auto;
     }
     .stage {
-        flex: 0 0 45vh; /* 상단 미리보기 영역 고정 비율 제공 */
+        flex: 0 0 45vh;
         width: 100%;
         border-bottom: 1px solid var(--color-border);
     }
