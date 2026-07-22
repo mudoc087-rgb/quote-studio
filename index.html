@@ -355,20 +355,28 @@
                             <div class="panel-section-body">
                                 <div class="field-row cols-2">
                                     <div class="field-col">
-                                        <label for="ratioSelect">캔버스 비율</label>
-                                        <select id="ratioSelect">
-                                            <option value="1:1">1 : 1</option>
-                                            <option value="4:5">4 : 5</option>
-                                            <option value="16:9">16 : 9</option>
-                                            <option value="9:16">9 : 16</option>
-                                            <option value="free" selected>자동 조절</option>
-                                        </select>
-                                        <div class="field-col">
-                                            <label for="layoutSelect">열 레이아웃</label>
-                                            <select id="layoutSelect">
-                                                <option value="1column" selected>일반 (1열)</option>
-                                                <option value="2column">책 내지 (가로 2열)</option>
-                                            </select>
+                                        <label>캔버스 비율</label>
+                                        <input type="hidden" id="ratioSelect" value="free" />
+                                        <div
+                                            class="segmented-control segmented-control-minimal"
+                                            data-target="ratioSelect">
+                                            <button type="button" data-value="1:1">1:1</button>
+                                            <button type="button" data-value="4:5">4:5</button>
+                                            <button type="button" data-value="16:9">16:9</button>
+                                            <button type="button" data-value="9:16">9:16</button>
+                                            <button type="button" data-value="free" class="active">자동</button>
+                                        </div>
+                                        <div class="field-col" style="margin-top: 10px">
+                                            <label>열 레이아웃</label>
+                                            <input type="hidden" id="layoutSelect" value="1column" />
+                                            <div
+                                                class="segmented-control segmented-control-minimal"
+                                                data-target="layoutSelect">
+                                                <button type="button" data-value="1column" class="active">
+                                                    일반(1열)
+                                                </button>
+                                                <button type="button" data-value="2column">책 내지(2열)</button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="field-col" id="customWidthArea">
@@ -422,22 +430,29 @@
 
                                 <div class="panel-section-title">배경</div>
                                 <div class="field-row cols-2">
+                                    <!-- 배경 타입 -->
                                     <div class="field-col">
-                                        <label for="bgType">배경 타입</label>
-                                        <select id="bgType">
-                                            <option value="color">단색</option>
-                                            <option value="grad2">2색 그라데이션</option>
-                                            <option value="grad3">3색 그라데이션</option>
-                                            <option value="image">이미지</option>
-                                        </select>
+                                        <label>배경 타입</label>
+                                        <input type="hidden" id="bgType" value="color" />
+                                        <div class="segmented-control segmented-control-minimal" data-target="bgType">
+                                            <button type="button" data-value="color" class="active">단색</button>
+                                            <button type="button" data-value="grad2">2색</button>
+                                            <button type="button" data-value="grad3">3색</button>
+                                            <button type="button" data-value="image">이미지</button>
+                                        </div>
                                     </div>
+
+                                    <!-- 방향 (그라데이션 방향) -->
                                     <div class="field-col" id="gradientDirWrapper" style="display: none">
-                                        <label for="gradientDir">방향</label>
-                                        <select id="gradientDir">
-                                            <option value="to right">가로</option>
-                                            <option value="to bottom" selected>세로</option>
-                                            <option value="to bottom right">대각선</option>
-                                        </select>
+                                        <label>방향</label>
+                                        <input type="hidden" id="gradientDir" value="to bottom" />
+                                        <div
+                                            class="segmented-control segmented-control-minimal"
+                                            data-target="gradientDir">
+                                            <button type="button" data-value="to right">가로</button>
+                                            <button type="button" data-value="to bottom" class="active">세로</button>
+                                            <button type="button" data-value="to bottom right">대각선</button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -482,11 +497,8 @@
                                             <input type="range" id="bgImageY" min="0" max="100" value="50" />
                                         </div>
                                         <div class="field-col">
-                                            <label>오버레이색</label>
-                                            <select id="bgOverlayColor">
-                                                <option value="0,0,0">블랙</option>
-                                                <option value="255,255,255">화이트</option>
-                                            </select>
+                                            <label for="bgOverlayColor">오버레이색</label>
+                                            <input type="color" id="bgOverlayColor" value="#000000" />
                                         </div>
                                         <div class="field-col">
                                             <label>투명도</label>
@@ -523,14 +535,19 @@
                                         </select>
                                     </div>
                                     <div class="field-col">
-                                        <label for="bodyWeight">본문 굵기</label>
-                                        <select id="bodyWeight">
-                                            <option value="300">얇게</option>
-                                            <option value="400" selected>약간 얇게</option>
-                                            <option value="500">보통</option>
-                                            <option value="600">약간 굵게</option>
-                                            <option value="700">굵게</option>
-                                        </select>
+                                        <label>본문 굵기</label>
+                                        <input type="hidden" id="bodyWeight" value="400" />
+                                        <div
+                                            class="segmented-control segmented-control-minimal"
+                                            data-target="bodyWeight">
+                                            <button type="button" data-value="300">얇게</button>
+                                            <button type="button" data-value="400" class="active">
+                                                약간<br />얇게
+                                            </button>
+                                            <button type="button" data-value="500">보통</button>
+                                            <button type="button" data-value="600">약간<br />굵게</button>
+                                            <button type="button" data-value="700">굵게</button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -546,16 +563,18 @@
                                         </div>
                                     </div>
                                     <div class="field-col">
-                                        <label for="wordBreak">줄바꿈</label>
-                                        <select id="wordBreak">
-                                            <option value="keep-all" selected>단어 단위</option>
-                                            <option value="break-all">글자 단위</option>
-                                        </select>
+                                        <label>줄바꿈</label>
+                                        <input type="hidden" id="wordBreak" value="keep-all" />
+                                        <div
+                                            class="segmented-control segmented-control-minimal"
+                                            data-target="wordBreak">
+                                            <button type="button" data-value="keep-all" class="active">
+                                                단어 단위
+                                            </button>
+                                            <button type="button" data-value="break-all">글자 단위</button>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="field-hint">
-                                    본문에서 문장을 드래그한 뒤 정렬 버튼을 누르면 개별 정렬이 적용돼요.
-                                </p>
 
                                 <div class="panel-divider"></div>
 
