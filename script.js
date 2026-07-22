@@ -19,6 +19,9 @@ const els = {
     paddingY: document.getElementById("paddingY"),
     paddingX: document.getElementById("paddingX"),
     bgType: document.getElementById("bgType"),
+    bgOverlayColor: document.getElementById("bgOverlayColor"),
+    bgOverlayOpacity: document.getElementById("bgOverlayOpacity"),
+    bgOverlayLayer: document.getElementById("bgOverlayLayer"),
     gradColor1: document.getElementById("gradColor1"),
     gradColor2: document.getElementById("gradColor2"),
     gradColor3: document.getElementById("gradColor3"),
@@ -223,7 +226,10 @@ function updateCanvas() {
     if (bgImageControls) bgImageControls.style.display = bgTypeVal === "image" ? "flex" : "none";
     if (bgImageLayer) bgImageLayer.style.display = bgTypeVal === "image" ? "block" : "none";
     if (bgOverlayLayer) bgOverlayLayer.style.display = bgTypeVal === "image" ? "block" : "none";
-
+    if (bgTypeVal === "image" && els.bgOverlayColor && els.bgOverlayOpacity) {
+        bgOverlayLayer.style.backgroundColor = els.bgOverlayColor.value;
+        bgOverlayLayer.style.opacity = els.bgOverlayOpacity.value;
+    }
     if (bgTypeVal === "color") {
         if (grad1Wrapper) grad1Wrapper.style.display = "flex";
         if (grad2Wrapper) grad2Wrapper.style.display = "none";
@@ -1942,7 +1948,8 @@ function updateBgImageStyles() {
     bgLayer.style.backgroundSize = `${document.getElementById("bgImageSize").value}%`;
     bgLayer.style.backgroundPosition = `${document.getElementById("bgImageX").value}% ${document.getElementById("bgImageY").value}%`;
     bgLayer.style.filter = `blur(${document.getElementById("bgImageBlur").value}px)`;
-    overlayLayer.style.backgroundColor = `rgba(${document.getElementById("bgOverlayColor").value}, ${document.getElementById("bgOverlayOpacity").value})`;
+    overlayLayer.style.backgroundColor = document.getElementById("bgOverlayColor").value;
+    overlayLayer.style.opacity = document.getElementById("bgOverlayOpacity").value;
 }
 ["bgImageSize", "bgImageX", "bgImageY", "bgImageBlur", "bgOverlayColor", "bgOverlayOpacity"].forEach((id) => {
     document.getElementById(id).addEventListener("input", updateBgImageStyles);
