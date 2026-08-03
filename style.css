@@ -398,7 +398,7 @@ input::placeholder {
     height: 24px;
     padding: 4px 8px;
     border: 1px solid #e2e8f0;
-    border-radius: 6px; /* 부드러운 곡선 네모 */
+    border-radius: 6px;
     background: #ffffff;
     color: #334155;
     font-size: 11px;
@@ -759,7 +759,7 @@ input[type="range"] {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    max-width: 75%; 
+    max-width: 75%;
     box-sizing: border-box;
     position: relative;
 }
@@ -1122,7 +1122,6 @@ input[type="range"] {
     transform: rotate(90deg);
 }
 
-
 .layout-2column #canvasTextWrapper {
     column-count: 2;
     column-gap: 50px;
@@ -1133,7 +1132,7 @@ input[type="range"] {
 @media (max-width: 900px) {
     .app-body {
         display: flex;
-        flex-direction: column-reverse; 
+        flex-direction: column-reverse;
         height: auto;
     }
     .stage {
@@ -1157,4 +1156,149 @@ input[type="range"] {
     .swatch-grid.cols-6 {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+}
+/* 1행 2열 그리드 및 콤팩트 카드 디자인 (넓은 사각형 팔레트 적용) */
+.member-list-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.member-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+/* 고정 카드 전용 */
+.member-card-fixed {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.member-card-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.member-avatar-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.member-name-input {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 6px;
+    font-size: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    outline: none;
+}
+
+.member-name-input:focus {
+    border-color: #3b82f6;
+}
+
+.member-name-fixed {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.member-del-btn {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+}
+
+.member-del-btn:hover {
+    color: #ef4444;
+}
+
+/* 하단 색상 선택 영역 (100% 가로 분할 꽉 채우기) */
+.member-colors-row {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    background: transparent;
+    padding: 0;
+}
+
+/* 개별 색상 아이템: flex: 1 로 균등하게 분할해서 꽉 채움 */
+.member-color-item {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+}
+
+.member-color-item span {
+    font-size: 9px;
+    color: #475569;
+    font-weight: 600;
+    user-select: none;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* 큼직한 사각형 컬러피커 (높이 28px) */
+.member-color-item input[type="color"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    width: 100%;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18); /* 밝은색 시인성 확보용 테두리 */
+}
+
+.member-color-item input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.member-color-item input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+.member-color-item input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 4px;
 }
