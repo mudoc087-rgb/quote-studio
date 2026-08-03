@@ -559,14 +559,14 @@ function applySmartHighlighting(container) {
                             ? els.parenColorB.value
                             : els.parenColorA
                               ? els.parenColorA.value
-                              : "#4c7a72";
+                              : "#a9bbc1";
                     } else {
                         let memberParenColor = member && member.parenColor ? member.parenColor : null;
                         resolvedColor = memberParenColor
                             ? memberParenColor
                             : els.parenColorA
                               ? els.parenColorA.value
-                              : "#4c7a72";
+                              : "#a9bbc1";
                     }
                 }
 
@@ -1423,7 +1423,7 @@ let chatMembers = [
         bubbleBg: "#f5f9ff",
         quoteColor: "#76b6d6",
         lineColor: "#97cddf",
-        parenColor: "#4c7a72"
+        parenColor: "#a9bbc1"
     },
     {
         id: Date.now() + 1,
@@ -1433,7 +1433,7 @@ let chatMembers = [
         bubbleBg: "#fff0f5",
         quoteColor: "#d9739f",
         lineColor: "#e697ba",
-        parenColor: "#934c7a"
+        parenColor: "#d5b9cb"
     }
 ];
 
@@ -1595,7 +1595,7 @@ document.getElementById("btnAddMember")?.addEventListener("click", () => {
         bubbleBg: "#f5f9ff",
         quoteColor: "#76b6d6",
         lineColor: "#cccccc",
-        parenColor: "#4c7a72"
+        parenColor: "#a9bbc1"
     });
     renderMembers();
     updateCanvas();
