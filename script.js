@@ -43,6 +43,7 @@ const els = {
     enableQuoteColor: document.getElementById("enableQuoteColor"),
     quoteColorA: document.getElementById("quoteColorA"),
     quoteColorB: document.getElementById("quoteColorB"),
+    quoteColorC: document.getElementById("quoteColorC"),
     enableParenColor: document.getElementById("enableParenColor"),
     parenColorA: document.getElementById("parenColorA"),
     parenColorB: document.getElementById("parenColorB"),
@@ -543,7 +544,7 @@ function applySmartHighlighting(container) {
                 let resolvedColor;
                 if (item.type === "quote") {
                     if (isRightBubble) {
-                        resolvedColor = els.quoteColorB ? els.quoteColorB.value : "#e5eeff";
+                        resolvedColor = els.quoteColorB ? els.quoteColorC.value : "#e5eeff";
                     } else {
                         let memberQuoteColor = member && member.quoteColor ? member.quoteColor : null;
                         resolvedColor = memberQuoteColor
@@ -1929,6 +1930,7 @@ document.addEventListener("DOMContentLoaded", () => {
         els.enableQuoteColor,
         els.quoteColorA,
         els.quoteColorB,
+        els.quoteColorC,
         els.enableParenColor,
         els.parenColorA,
         els.parenColorB,
