@@ -67,7 +67,7 @@ const els = {
 
     autoParenBreak: document.getElementById("autoParenBreak"),
     layoutSelect: document.getElementById("layoutSelect"),
-    midGap: document.getElementById("midGap") // 새 여백 조절 바 등록
+    midGap: document.getElementById("midGap")
 };
 
 function applyBubbleColors(container) {
@@ -78,8 +78,7 @@ function applyBubbleColors(container) {
         const isRight = b.classList.contains("side-right");
         const textNode = b.querySelector(".bubble-text") || inner;
         textNode.style.wordBreak = els.wordBreak ? els.wordBreak.value : "keep-all";
-        const leftBg = els.bubbleColorLeft ? els.bubbleColorLeft.value : "#f5f9ff";
-        const leftText = els.bubbleTextColorLeft ? els.bubbleTextColorLeft.value : "#252442";
+
         const rightBg = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
         const rightText = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
 
@@ -87,6 +86,12 @@ function applyBubbleColors(container) {
             inner.style.backgroundColor = rightBg;
             textNode.style.color = rightText;
         } else {
+            const memberId = b.getAttribute("data-member-id");
+            const member = chatMembers.find((m) => m.id == memberId);
+
+            const leftBg = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
+            const leftText = els.globalTextColor ? els.globalTextColor.value : "#252442";
+
             inner.style.backgroundColor = leftBg;
             textNode.style.color = leftText;
         }
@@ -205,7 +210,6 @@ function updateCanvas() {
     const gapValue = els.midGap ? els.midGap.value : 40;
 
     if (midGapVal) midGapVal.textContent = `${gapValue}px`;
-    // 1. 전체 캔버스(captureArea)에 강제로 먹혀있던 Grid 속성 제거
     if (midGapArea) midGapArea.style.display = is2Col ? "block" : "none";
     els.captureArea.classList.remove("layout-2column");
     els.captureArea.style.display = "";
@@ -347,7 +351,7 @@ function updateCanvas() {
         if (is2Col) {
             textWrapper.style.columnCount = "2";
             textWrapper.style.columnGap = `${gapValue}px`;
-            textWrapper.style.columnRule = "none"; // 세로줄 완전히 없애기
+            textWrapper.style.columnRule = "none";
         } else {
             textWrapper.style.columnCount = "1";
             textWrapper.style.columnGap = "normal";
@@ -525,24 +529,44 @@ function applySmartHighlighting(container) {
 
                 const parent = node.parentNode;
                 const bubbleAncestor = parent.closest ? parent.closest(".chat-bubble") : null;
+                const dialogueAncestor = parent.closest ? parent.closest(".dialogue-line") : null;
                 const isRightBubble = !!(bubbleAncestor && bubbleAncestor.classList.contains("side-right"));
+
+                let memberId = null;
+                if (bubbleAncestor) {
+                    memberId = bubbleAncestor.getAttribute("data-member-id");
+                } else if (dialogueAncestor) {
+                    memberId = dialogueAncestor.getAttribute("data-member-id");
+                }
+                const member = memberId ? chatMembers.find((m) => m.id == memberId) : null;
+
                 let resolvedColor;
                 if (item.type === "quote") {
-                    resolvedColor = isRightBubble
-                        ? els.quoteColorB
-                            ? els.quoteColorB.value
-                            : els.quoteColorA.value
-                        : els.quoteColorA
-                          ? els.quoteColorA.value
-                          : "#b7472a";
+                    if (isRightBubble) {
+                        resolvedColor = els.quoteColorB ? els.quoteColorB.value : "#e5eeff";
+                    } else {
+                        let memberQuoteColor = member && member.quoteColor ? member.quoteColor : null;
+                        resolvedColor = memberQuoteColor
+                            ? memberQuoteColor
+                            : els.quoteColorA
+                              ? els.quoteColorA.value
+                              : "#76b6d6";
+                    }
                 } else {
-                    resolvedColor = isRightBubble
-                        ? els.parenColorB
+                    if (isRightBubble) {
+                        resolvedColor = els.parenColorB
                             ? els.parenColorB.value
-                            : els.parenColorA.value
-                        : els.parenColorA
-                          ? els.parenColorA.value
-                          : "#4c7a72";
+                            : els.parenColorA
+                              ? els.parenColorA.value
+                              : "#4c7a72";
+                    } else {
+                        let memberParenColor = member && member.parenColor ? member.parenColor : null;
+                        resolvedColor = memberParenColor
+                            ? memberParenColor
+                            : els.parenColorA
+                              ? els.parenColorA.value
+                              : "#4c7a72";
+                    }
                 }
 
                 const span = document.createElement("span");
@@ -737,7 +761,6 @@ document.getElementById("btnQuoteColorB").addEventListener("click", () => {
     container.appendChild(range.cloneContents());
     const nestedSpans = container.querySelectorAll("span");
     nestedSpans.forEach((s) => {
-        // 기존 스타일이나 속성을 초기화하여 텍스트만 남깁니다.
         s.removeAttribute("data-manual-quote-color");
         s.style.color = "";
     });
@@ -795,7 +818,12 @@ document.getElementById("selHighlight").addEventListener("change", function () {
         try {
             const span = document.createElement("span");
             span.style.backgroundColor = color;
-            span.appendChild(savedHighlightRange.extractContents());
+            span.style.display = "inline";
+            span.style.boxDecorationBreak = "clone";
+            span.style.webkitBoxDecorationBreak = "clone";
+
+            const content = savedHighlightRange.extractContents();
+            span.appendChild(content);
             savedHighlightRange.insertNode(span);
         } catch (e) {
             console.error("하이라이트 적용 실패:", e);
@@ -849,8 +877,10 @@ document.getElementById("btnQuoteLineA").addEventListener("click", () => toggleQ
 document.getElementById("btnQuoteLineB").addEventListener("click", () => toggleQuoteLine("B"));
 
 function autoApplyQuoteLines() {
+    const chatRegex = /^([^|:]+)\s*([|:])\s*(.+)$/;
     const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/;
     const blocks = Array.from(els.editor.children);
+
     blocks.forEach((block) => {
         if (
             block.classList.contains("chat-bubble") ||
@@ -862,10 +892,38 @@ function autoApplyQuoteLines() {
         ) {
             return;
         }
+
         const text = block.textContent || "";
-        if (quoteRegex.test(text)) {
-            block.classList.add("dialogue-line");
-            block.setAttribute("data-line-variant", "A");
+        const matchChat = text.match(chatRegex);
+
+        if (matchChat) {
+            const speakerName = matchChat[1].trim();
+            const separator = matchChat[2];
+            const dialogue = matchChat[3].trim();
+            const member = chatMembers.find((m) => m.name === speakerName);
+
+            if (member) {
+                const nameColor = member.color || "inherit";
+                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator}</span> ${dialogue}`;
+
+                block.classList.add("dialogue-line");
+                block.setAttribute("data-line-variant", "A");
+                block.setAttribute("data-member-id", member.id);
+
+                if (member.lineColor) {
+                    block.style.setProperty("--quote-line-color-a", member.lineColor);
+                }
+            } else {
+                if (quoteRegex.test(text)) {
+                    block.classList.add("dialogue-line");
+                    block.setAttribute("data-line-variant", "A");
+                }
+            }
+        } else {
+            if (quoteRegex.test(text)) {
+                block.classList.add("dialogue-line");
+                block.setAttribute("data-line-variant", "A");
+            }
         }
     });
     updateCanvas();
@@ -1356,8 +1414,26 @@ document.addEventListener("touchend", handleImgDragEnd);
    ========================================================= */
 
 let chatMembers = [
-    { id: Date.now(), name: "A", color: "#97cddf", profile: "" },
-    { id: Date.now() + 1, name: "B", color: "#e697ba", profile: "" }
+    {
+        id: Date.now(),
+        name: "A",
+        color: "#97cddf",
+        profile: "",
+        bubbleBg: "#f5f9ff",
+        quoteColor: "#76b6d6",
+        lineColor: "#97cddf",
+        parenColor: "#4c7a72"
+    },
+    {
+        id: Date.now() + 1,
+        name: "B",
+        color: "#e697ba",
+        profile: "",
+        bubbleBg: "#fff0f5",
+        quoteColor: "#d9739f",
+        lineColor: "#e697ba",
+        parenColor: "#934c7a"
+    }
 ];
 
 let memberPanelCollapsed = false;
@@ -1371,20 +1447,19 @@ document.getElementById("btnToggleMemberPanel")?.addEventListener("click", () =>
     }
 });
 
+// [script.js] renderMembers 함수 전체 교체 (1행 2열 전용 심플 레이아웃)
 function renderMembers() {
     const container = document.getElementById("memberListContainer");
     if (!container) return;
     container.innerHTML = "";
 
-    chatMembers.forEach((member, index) => {
+    chatMembers.forEach((member) => {
         const row = document.createElement("div");
-        row.style.display = "flex";
-        row.style.gap = "4px";
-        row.style.alignItems = "center";
-        row.style.border = "1px solid #e2e8f0";
-        row.style.padding = "4px";
-        row.style.borderRadius = "6px";
-        row.style.background = "#f8fafc";
+        row.className = "member-card";
+
+        // 상단: 프로필 버튼 + 이름 입력 + 삭제 버튼
+        const topArea = document.createElement("div");
+        topArea.className = "member-card-top";
 
         const fileInput = document.createElement("input");
         fileInput.type = "file";
@@ -1400,17 +1475,13 @@ function renderMembers() {
                     img.onload = () => {
                         const canvas = document.createElement("canvas");
                         const ctx = canvas.getContext("2d");
-
                         const maxSize = 200;
                         canvas.width = maxSize;
                         canvas.height = maxSize;
-
                         const size = Math.min(img.width, img.height);
                         const sx = (img.width - size) / 2;
                         const sy = (img.height - size) / 2;
-
                         ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
-
                         member.profile = canvas.toDataURL("image/jpeg", 0.85);
                         renderMembers();
                         updateCanvas();
@@ -1420,102 +1491,111 @@ function renderMembers() {
                 reader.readAsDataURL(file);
             }
         });
+
         const profileBtn = document.createElement("button");
-        profileBtn.style.width = "24px";
-        profileBtn.style.height = "24px";
-        profileBtn.style.padding = "0";
-        profileBtn.style.border = "1px dashed #cbd5e1";
-        profileBtn.style.borderRadius = "50%";
-        profileBtn.style.backgroundSize = "cover";
-        profileBtn.style.backgroundPosition = "center";
-        profileBtn.style.cursor = "pointer";
-        profileBtn.style.fontSize = "9px";
-        profileBtn.style.color = "#64748b";
-        profileBtn.style.flexShrink = "0";
+        profileBtn.type = "button";
+        profileBtn.className = "member-avatar-btn";
         profileBtn.style.backgroundImage = member.profile ? `url(${member.profile})` : "none";
         profileBtn.style.backgroundColor = member.profile ? "transparent" : member.color;
-        profileBtn.textContent = member.profile ? "" : "P";
+        profileBtn.textContent = member.profile ? "" : member.name.charAt(0) || "P";
         profileBtn.onclick = () => fileInput.click();
 
         const nameInput = document.createElement("input");
         nameInput.type = "text";
         nameInput.value = member.name;
         nameInput.placeholder = "이름";
-        nameInput.style.width = "100%";
-        nameInput.style.flex = "1";
-        nameInput.style.fontSize = "11px";
-        nameInput.style.padding = "2px 4px";
-        nameInput.style.border = "1px solid #cbd5e1";
-        nameInput.style.borderRadius = "4px";
+        nameInput.className = "member-name-input";
 
         nameInput.addEventListener("input", (e) => {
             member.name = e.target.value;
-
+            if (!member.profile) {
+                profileBtn.textContent = member.name.charAt(0) || "P";
+            }
             const matchBubbles = els.editor.querySelectorAll(`.chat-bubble[data-member-id="${member.id}"]`);
             matchBubbles.forEach((bubble) => {
                 const speakerNode = bubble.querySelector(".bubble-speaker");
-                if (speakerNode) {
-                    speakerNode.style.color = member.color;
-                }
-                const profileImgNode = bubble.querySelector(".bubble-profile");
-                if (profileImgNode && !member.profile) {
-                    profileImgNode.style.backgroundColor = member.color;
-                }
+                if (speakerNode) speakerNode.textContent = member.name;
             });
-            profileBtn.style.backgroundColor = member.profile ? "transparent" : member.color;
             updateCanvas();
         });
 
-        const colorInput = document.createElement("input");
-        colorInput.type = "color";
-        colorInput.value = member.color;
-        colorInput.style.width = "20px";
-        colorInput.style.height = "20px";
-        colorInput.style.padding = "0";
-        colorInput.style.border = "none";
-        colorInput.style.cursor = "pointer";
-        colorInput.style.background = "none";
-        colorInput.style.flexShrink = "0";
-        colorInput.onchange = (e) => {
-            member.color = e.target.value;
-
-            const matchBubbles = els.editor.querySelectorAll(`.chat-bubble[data-member-id="${member.id}"]`);
-            matchBubbles.forEach((bubble) => {
-                const speakerNode = bubble.querySelector(".bubble-speaker");
-                if (speakerNode) {
-                    speakerNode.style.color = member.color;
-                }
-            });
-            updateCanvas();
-        };
-
         const delBtn = document.createElement("button");
-        delBtn.textContent = "×";
-        delBtn.style.width = "16px";
-        delBtn.style.border = "none";
-        delBtn.style.background = "none";
-        delBtn.style.cursor = "pointer";
-        delBtn.style.color = "#ef4444";
-        delBtn.style.fontWeight = "bold";
-        delBtn.style.fontSize = "12px";
-        delBtn.style.flexShrink = "0";
+        delBtn.type = "button";
+        delBtn.className = "member-del-btn";
+        delBtn.innerHTML = "✕";
+        delBtn.title = "삭제";
         delBtn.onclick = () => {
-            chatMembers.splice(index, 1);
+            chatMembers = chatMembers.filter((m) => m.id !== member.id);
             renderMembers();
             updateCanvas();
         };
 
-        row.appendChild(fileInput);
-        row.appendChild(profileBtn);
-        row.appendChild(nameInput);
-        row.appendChild(colorInput);
-        row.appendChild(delBtn);
+        topArea.appendChild(fileInput);
+        topArea.appendChild(profileBtn);
+        topArea.appendChild(nameInput);
+        topArea.appendChild(delBtn);
+
+        // 하단: 색상 선택기 5종 (이름, 배경, 따옴표, 강조선, 괄호)
+        const colorsWrapper = document.createElement("div");
+        colorsWrapper.className = "member-colors-row";
+
+        const createColorPicker = (labelName, propName, initValue) => {
+            const label = document.createElement("label");
+            label.className = "member-color-item";
+
+            const input = document.createElement("input");
+            input.type = "color";
+            input.value = member[propName] || initValue;
+            input.title = labelName;
+
+            input.addEventListener("input", (e) => {
+                member[propName] = e.target.value;
+                if (propName === "color" && !member.profile) {
+                    profileBtn.style.backgroundColor = e.target.value;
+                }
+                const matchBubbles = els.editor.querySelectorAll(`.chat-bubble[data-member-id="${member.id}"]`);
+                matchBubbles.forEach((bubble) => {
+                    const speakerNode = bubble.querySelector(".bubble-speaker");
+                    if (speakerNode && propName === "color") speakerNode.style.color = member.color;
+
+                    const inner = bubble.querySelector(".bubble-inner") || bubble;
+                    if (propName === "bubbleBg") inner.style.backgroundColor = member.bubbleBg;
+                });
+                updateCanvas();
+            });
+
+            const span = document.createElement("span");
+            span.textContent = labelName;
+
+            label.appendChild(input);
+            label.appendChild(span);
+            return label;
+        };
+
+        colorsWrapper.appendChild(createColorPicker("이름", "color", member.color));
+        colorsWrapper.appendChild(createColorPicker("배경", "bubbleBg", member.bubbleBg));
+        colorsWrapper.appendChild(createColorPicker("따옴표", "quoteColor", member.quoteColor));
+        colorsWrapper.appendChild(createColorPicker("선", "lineColor", member.lineColor));
+        colorsWrapper.appendChild(createColorPicker("괄호", "parenColor", member.parenColor));
+
+        row.appendChild(topArea);
+        row.appendChild(colorsWrapper);
+
         container.appendChild(row);
     });
 }
 
 document.getElementById("btnAddMember")?.addEventListener("click", () => {
-    chatMembers.push({ id: Date.now(), name: "새 인물", color: "#000000", profile: "" });
+    chatMembers.push({
+        id: Date.now(),
+        name: "새 인물",
+        color: "#000000",
+        profile: "",
+        bubbleBg: "#f5f9ff",
+        quoteColor: "#76b6d6",
+        lineColor: "#cccccc",
+        parenColor: "#4c7a72"
+    });
     renderMembers();
     updateCanvas();
 });
@@ -2111,13 +2191,11 @@ function normalizeParagraphs(container) {
     if (container.childNodes.length === 0) container.innerHTML = "<div><br></div>";
 }
 
-// 2. 레이아웃 및 중간 여백 슬라이더 변경 시 실시간 반영
 document.getElementById("layoutSelect").addEventListener("change", updateCanvas);
 if (els.midGap) {
     els.midGap.addEventListener("input", updateCanvas);
 }
 
-// 1. 페이지 분할선 삽입 버튼 이벤트
 document.getElementById("btnPageBreak").addEventListener("click", () => {
     els.editor.focus();
 
@@ -2162,7 +2240,6 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
 
     prepareCanvasForCapture(els.captureArea);
 
-    // 분할선이 문단(div) 안쪽에 중첩돼 있어도 textWrapper의 "직계 자식" 레벨까지 끌어올림
     function promoteDividersToTopLevel(root) {
         const dividers = Array.from(root.querySelectorAll(".page-break-line"));
         dividers.forEach((divider) => {
@@ -2193,7 +2270,6 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
         });
     }
 
-    // 실제 편집화면은 안 건드리고, 복제본에서만 분할선을 최상위로 끌어올려 분할 처리
     const workWrapper = textWrapper.cloneNode(true);
     promoteDividersToTopLevel(workWrapper);
 
@@ -2211,7 +2287,6 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
     }
     if (currentChunk.length > 0) chunks.push(currentChunk);
 
-    // 분할선 뒤에 자동으로 붙는 빈 <br>이 다음 페이지 상단 여백을 깨는 것 방지
     chunks.forEach((chunk, idx) => {
         if (idx === 0 || chunk.length === 0) return;
         let first = chunk[0];
