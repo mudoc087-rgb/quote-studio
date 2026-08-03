@@ -308,7 +308,7 @@
                                                 border-radius: 6px;
                                                 display: flex;
                                                 gap: 8px;
-                                                margin-bottom: 10px;
+                                                margin-bottom: 12px;
                                             ">
                                             <button
                                                 id="btnAddMember"
@@ -316,7 +316,6 @@
                                                 style="
                                                     font-size: 11px;
                                                     padding: 6px;
-
                                                     border: 1px dashed var(--color-border);
                                                 ">
                                                 + 인물 추가
@@ -332,15 +331,39 @@
                                                 ><input type="checkbox" id="toggleName" checked /> 이름</label
                                             >
                                         </div>
-                                        <div
-                                            id="memberListContainer"
-                                            style="
-                                                display: grid;
-                                                grid-template-columns: 1fr 1fr;
-                                                gap: 6px;
-                                                margin-bottom: 8px;
-                                            ">
-                                            <!-- JS에 의해 동적으로 멤버 항목들이 삽입되는 곳 -->
+
+                                        <!-- index.html 의 .member-list-grid 내부 🔒 고정 카드 교체 -->
+                                        <div class="member-list-grid">
+                                            <!-- 🔒 고정 카드: 항상 첫 칸 -->
+                                            <div class="member-card member-card-fixed">
+                                                <div class="member-card-top">
+                                                    <div class="member-avatar-btn" style="background-color: #7081ff">
+                                                        💬
+                                                    </div>
+                                                    <div class="member-name-fixed">
+                                                        오른쪽 말풍선
+                                                        <span style="font-size: 10px; opacity: 0.6">🔒</span>
+                                                    </div>
+                                                </div>
+                                                <div class="member-colors-row">
+                                                    <label class="member-color-item">
+                                                        <input type="color" id="bubbleColorRight" value="#7081ff" />
+                                                        <span>배경</span>
+                                                    </label>
+
+                                                    <label class="member-color-item">
+                                                        <input type="color" id="quoteColorB" value="#e5eeff" />
+                                                        <span>따옴표</span>
+                                                    </label>
+
+                                                    <label class="member-color-item">
+                                                        <input type="color" id="parenColorB" value="#d0d7ff" />
+                                                        <span>괄호</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div id="memberListContainer" style="display: contents"></div>
                                         </div>
                                     </div>
                                 </details>
@@ -670,29 +693,6 @@
                                         <span>형광C</span>
                                     </div>
                                 </div>
-
-                                <!-- 대화 버블 색상 -->
-                                <div class="panel-section-title">대화 버블 색상</div>
-                                <div class="swatch-grid cols-4">
-                                    <div class="swatch-cell">
-                                        <input type="color" id="bubbleColorLeft" value="#f5f9ff" />
-                                        <span>왼쪽 배경</span>
-                                    </div>
-                                    <div class="swatch-cell">
-                                        <input type="color" id="bubbleTextColorLeft" value="#252442" />
-                                        <span>왼쪽 글자</span>
-                                    </div>
-                                    <div class="swatch-cell">
-                                        <input type="color" id="bubbleColorRight" value="#7081ff" />
-                                        <span>오른쪽 배경</span>
-                                    </div>
-                                    <div class="swatch-cell">
-                                        <input type="color" id="bubbleTextColorRight" value="#ffffff" />
-                                        <span>오른쪽 글자</span>
-                                    </div>
-                                </div>
-
-                                <div class="panel-divider"></div>
 
                                 <div class="panel-section-title">스마트 하이라이트</div>
 
