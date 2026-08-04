@@ -23,6 +23,7 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -32,6 +33,9 @@
                 <!-- 좌측: 편집 패널(아코디언) -->
                 <aside class="control-panel">
                     <div class="header-actions">
+                        <button id="btnToggleHelp" class="btn btn-ghost" style="color: #ff9800; font-weight: bold">
+                            도움말 💡
+                        </button>
                         <button id="btnCopy" class="btn btn-ghost">이미지 복사</button>
                         <button id="btnSave" class="btn btn-primary">통합 저장</button>
                         <button id="btnSplitSave" class="btn btn-primary" style="background-color: #6cb13c">
@@ -111,7 +115,6 @@
                                                 style="width: 100%; padding: 6px; font-size: 11px" />
                                         </div>
 
-                                        <!-- 부제목 (기존 ID 절대 보존) -->
                                         <div class="text-field-block" style="margin-bottom: 12px">
                                             <div
                                                 class="text-field-controls"
@@ -222,22 +225,39 @@
                                         <button
                                             id="btnClearHighlight"
                                             class="btn-editor-pill pill-danger"
-                                            title="서식 지우기">
+                                            data-help="마우스 커서가 있는 줄이나 드래그한 영역의 모든 서식을 지웁니다.">
                                             지우기
                                         </button>
-                                        <button id="btnBold" class="btn-editor-pill" title="굵게"><b>B</b></button>
-                                        <button id="btnItalic" class="btn-editor-pill" title="기울임"><i>I</i></button>
-                                        <button id="btnQuoteWrap" class="btn-editor-pill" title="따옴표 감싸기">
+                                        <button
+                                            id="btnBold"
+                                            class="btn-editor-pill"
+                                            data-help="텍스트를 드래그한 뒤 누르면 글씨가 굵어집니다.">
+                                            <b>B</b>
+                                        </button>
+                                        <button
+                                            id="btnItalic"
+                                            class="btn-editor-pill"
+                                            data-help="텍스트를 드래그한 뒤 누르면 글씨가 기울어집니다.">
+                                            <i>I</i>
+                                        </button>
+                                        <button
+                                            id="btnQuoteWrap"
+                                            class="btn-editor-pill"
+                                            data-help="텍스트를 드래그한 뒤 누르면 앞뒤로 따옴표('')를 씌워줍니다.">
                                             “”
                                         </button>
                                         <button
                                             id="btnSubText"
                                             class="btn-editor-pill pill-sub"
-                                            title="보조 글자색 적용">
+                                            data-help="텍스트를 드래그한 뒤 누르면 [03.색상&효과-보조색]이 적용됩니다.">
                                             보조색
                                         </button>
 
-                                        <select id="selHighlight" class="toolbar-select" style="width: 80px">
+                                        <select
+                                            id="selHighlight"
+                                            class="toolbar-select"
+                                            style="width: 80px"
+                                            data-help="텍스트를 드래그하고 형광펜 색상을 선택하면 [03.색상&효과-형광펜]이 칠해집니다.">
                                             <option value="" disabled selected>형광펜</option>
                                             <option value="A">형광A</option>
                                             <option value="B">형광B</option>
@@ -246,32 +266,68 @@
 
                                         <div class="toolbar-divider"></div>
 
-                                        <button id="btnAddTitleBlock" class="btn-editor-pill pill-blue">+ 제목</button>
-                                        <button id="btnAddSubtitleBlock" class="btn-editor-pill pill-blue">
+                                        <button
+                                            id="btnAddTitleBlock"
+                                            class="btn-editor-pill pill-blue"
+                                            data-help="본문에 [01.콘텐츠-타이틀&출처-제목] 블럭을 추가합니다.">
+                                            + 제목
+                                        </button>
+                                        <button
+                                            id="btnAddSubtitleBlock"
+                                            class="btn-editor-pill pill-blue"
+                                            data-help="본문에 [01.콘텐츠-타이틀&출처-부제목] 블럭을 추가합니다.">
                                             + 부제목
                                         </button>
-                                        <button id="btnAddImage" class="btn-editor-pill pill-blue">+ 사진</button>
-                                        <button id="btnFadeLine" class="btn-editor-pill pill-blue">+ 구분선</button>
-                                        <button id="btnPageBreak" class="btn-editor-pill pill-blue">
+                                        <button
+                                            id="btnAddImage"
+                                            class="btn-editor-pill pill-blue"
+                                            data-help="본문에 사진을 추가합니다.&#10;추가된 사진의 [좌&우/아래]테두리를 드래그하면 크기를 조절할 수 있습니다.">
+                                            + 사진
+                                        </button>
+                                        <button
+                                            id="btnFadeLine"
+                                            class="btn-editor-pill pill-blue"
+                                            data-help="본문에 꾸밈용 가로 구분선을 추가합니다.">
+                                            + 구분선
+                                        </button>
+                                        <button
+                                            id="btnPageBreak"
+                                            class="btn-editor-pill pill-blue"
+                                            data-help="이 점선을 기준으로 영역을 나눕니다.&#10;상단의 '분할 저장'을 누르면 이 선을 기준으로 이미지가 잘려서 저장됩니다.">
                                             + 페이지 분할선
                                         </button>
                                         <div class="toolbar-divider"></div>
 
-                                        <button id="btnQuoteColorB" class="btn-editor-pill" title="따옴표 B색 적용">
+                                        <button
+                                            id="btnQuoteColorB"
+                                            class="btn-editor-pill"
+                                            data-help="드래그한 텍스트의 색상을 [03.색상&효과-따옴표 B] 색상으로 바꿉니다.">
                                             따옴표B
                                         </button>
-                                        <button id="btnQuoteLineA" class="btn-editor-pill" title="강조선 A">
+                                        <button
+                                            id="btnQuoteLineA"
+                                            class="btn-editor-pill"
+                                            data-help="드래그한 텍스트에 [03.색상&효과-강조선A] 스타일을 적용합니다.">
                                             강조선A
                                         </button>
-                                        <button id="btnQuoteLineB" class="btn-editor-pill" title="강조선 B">
+                                        <button
+                                            id="btnQuoteLineB"
+                                            class="btn-editor-pill"
+                                            data-help="드래그한 텍스트에 [03.색상&효과-강조선B] 스타일을 적용합니다.">
                                             강조선B
                                         </button>
                                         <div class="toolbar-divider"></div>
-                                        <button id="btnAutoQuoteLine" class="btn-editor-pill pill-green">
+                                        <button
+                                            id="btnAutoQuoteLine"
+                                            class="btn-editor-pill pill-green"
+                                            data-help="본문의 따옴표를 감지하여 자동으로 강조선 스타일로 한 번에 변환합니다.&#10; [인물명 | “대사”] 형태로 적혀있으면 아래 [말풍선&인물] 설정에 맞춰 컬러가 자동 지정됩니다.">
                                             ⚡자동강조선
                                         </button>
 
-                                        <button id="btnAutoChatParse" class="btn-editor-pill pill-green">
+                                        <button
+                                            id="btnAutoChatParse"
+                                            class="btn-editor-pill pill-green"
+                                            data-help="본문의 따옴표를 감지하여 말풍선으로 변환합니다.&#10;[인물명 | “대사”] 형태로 적혀있으면 아래 [말풍선&인물] 설정에 맞춰 컬러가 자동 지정됩니다.&#10;인물 변경은 프로필 사진 클릭&#10;">
                                             ⚡자동말풍선
                                         </button>
                                     </div>
@@ -295,7 +351,8 @@
                                             background: #f8fafc;
                                             cursor: pointer;
                                             user-select: none;
-                                        ">
+                                        "
+                                        data-help="자동강조선&자동말풍선 적용 시 적용될 인물별 프로필과 색상을 설정하는 곳입니다.">
                                         💬 말풍선 & 인물
                                     </summary>
                                     <div style="padding: 12px; border-top: 1px solid var(--color-border-light)">
@@ -317,25 +374,32 @@
                                                     font-size: 11px;
                                                     padding: 6px;
                                                     border: 1px dashed var(--color-border);
-                                                ">
+                                                "
+                                                data-help="새로운 인물 카드를 추가합니다.(왼쪽)">
                                                 + 인물 추가
                                             </button>
-                                            <label style="font-size: 11px; margin: 0; cursor: pointer"
+                                            <label
+                                                style="font-size: 11px; margin: 0; cursor: pointer"
+                                                data-help="체크 시, 대사에 괄호()가 있을 때 자동으로 줄을 바꿔줍니다."
                                                 ><input type="checkbox" id="autoParenBreak" checked /> 괄호
                                                 줄바꿈</label
                                             >
-                                            <label style="font-size: 11px; margin: 0; cursor: pointer"
+                                            <label
+                                                style="font-size: 11px; margin: 0; cursor: pointer"
+                                                data-help="모든 말풍선에서 프로필 사진을 숨기거나 표시합니다."
                                                 ><input type="checkbox" id="toggleProfile" checked /> 프사</label
                                             >
-                                            <label style="font-size: 11px; margin: 0; cursor: pointer"
+                                            <label
+                                                style="font-size: 11px; margin: 0; cursor: pointer"
+                                                data-help="모든 말풍선에서 인물 이름을 숨기거나 표시합니다."
                                                 ><input type="checkbox" id="toggleName" checked /> 이름</label
                                             >
                                         </div>
 
-                                        <!-- index.html 의 .member-list-grid 내부 🔒 고정 카드 교체 -->
                                         <div class="member-list-grid">
-                                            <!-- 🔒 고정 카드: 항상 첫 칸 -->
-                                            <div class="member-card member-card-fixed">
+                                            <div
+                                                class="member-card member-card-fixed"
+                                                data-help="오른쪽에 배치될 말풍선의 배경색, 따옴표색, 괄호색을 설정합니다.">
                                                 <div class="member-card-top">
                                                     <div class="member-avatar-btn" style="background-color: #7081ff">
                                                         💬
@@ -346,17 +410,23 @@
                                                     </div>
                                                 </div>
                                                 <div class="member-colors-row">
-                                                    <label class="member-color-item">
+                                                    <label
+                                                        class="member-color-item"
+                                                        data-help="말풍선의 배경색을 지정합니다.">
                                                         <input type="color" id="bubbleColorRight" value="#7081ff" />
                                                         <span>배경</span>
                                                     </label>
 
-                                                    <label class="member-color-item">
+                                                    <label
+                                                        class="member-color-item"
+                                                        data-help="말풍선 안의 따옴표 색상을 지정합니다.">
                                                         <input type="color" id="quoteColorC" value="#e5eeff" />
                                                         <span>따옴표</span>
                                                     </label>
 
-                                                    <label class="member-color-item">
+                                                    <label
+                                                        class="member-color-item"
+                                                        data-help="말풍선 안의 괄호 색상을 지정합니다.">
                                                         <input type="color" id="parenColorB" value="#d0d7ff" />
                                                         <span>괄호</span>
                                                     </label>
@@ -601,48 +671,82 @@
 
                                 <div class="panel-divider"></div>
 
-                                <div class="panel-section-title">간격 디테일</div>
-                                <div class="field-row cols-4">
+                                <!-- 본문 간격 디테일 (5열로 한 줄 배치) -->
+                                <div class="panel-section-title">본문 간격 디테일</div>
+                                <div class="field-row cols-5">
                                     <div class="field-col">
                                         <label for="fontSize">크기 (px)</label>
                                         <div class="stepper-minimal">
-                                            <button onclick="stepInput('fontSize', -1)">-</button>
+                                            <button type="button" onclick="stepInput('fontSize', -1)">-</button>
                                             <input type="number" id="fontSize" value="16" />
-                                            <button onclick="stepInput('fontSize', 1)">+</button>
+                                            <button type="button" onclick="stepInput('fontSize', 1)">+</button>
                                         </div>
                                     </div>
                                     <div class="field-col">
                                         <label for="letterSpacing">자간 (px)</label>
                                         <div class="stepper-minimal">
-                                            <button onclick="stepInput('letterSpacing', -0.5, 2)">-</button>
+                                            <button type="button" onclick="stepInput('letterSpacing', -0.5, 2)">
+                                                -
+                                            </button>
                                             <input type="number" id="letterSpacing" value="-0.5" step="0.5" />
-                                            <button onclick="stepInput('letterSpacing', 0.5, 2)">+</button>
+                                            <button type="button" onclick="stepInput('letterSpacing', 0.5, 2)">
+                                                +
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="field-col">
                                         <label for="lineHeight">행간 (px)</label>
                                         <div class="stepper-minimal">
-                                            <button onclick="stepInput('lineHeight', -2)">-</button>
+                                            <button type="button" onclick="stepInput('lineHeight', -2)">-</button>
                                             <input type="number" id="lineHeight" value="22" />
-                                            <button onclick="stepInput('lineHeight', 2)">+</button>
+                                            <button type="button" onclick="stepInput('lineHeight', 2)">+</button>
                                         </div>
                                     </div>
                                     <div class="field-col">
                                         <label for="paraSpacing">문단 (px)</label>
                                         <div class="stepper-minimal">
-                                            <button onclick="stepInput('paraSpacing', -2)">-</button>
+                                            <button type="button" onclick="stepInput('paraSpacing', -2)">-</button>
                                             <input type="number" id="paraSpacing" value="14" />
-                                            <button onclick="stepInput('paraSpacing', 2)">+</button>
+                                            <button type="button" onclick="stepInput('paraSpacing', 2)">+</button>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="field-row cols-4">
                                     <div class="field-col">
                                         <label for="fontScaleX">장평 (%)</label>
                                         <div class="stepper-minimal">
-                                            <button onclick="stepInput('fontScaleX', -1)">-</button>
+                                            <button type="button" onclick="stepInput('fontScaleX', -1)">-</button>
                                             <input type="number" id="fontScaleX" value="98" />
-                                            <button onclick="stepInput('fontScaleX', 1)">+</button>
+                                            <button type="button" onclick="stepInput('fontScaleX', 1)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="panel-divider" style="margin: 8px 0"></div>
+
+                                <!-- 말풍선 간격 디테일 (새롭게 분리하여 추가) -->
+                                <div class="panel-section-title">말풍선 간격 디테일</div>
+                                <div class="field-row cols-3">
+                                    <div class="field-col">
+                                        <label for="bubbleFontSize">글자크기</label>
+                                        <div class="stepper-minimal">
+                                            <button type="button" onclick="stepInput('bubbleFontSize', -1)">-</button>
+                                            <input type="number" id="bubbleFontSize" value="15" />
+                                            <button type="button" onclick="stepInput('bubbleFontSize', 1)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="field-col">
+                                        <label for="bubbleLineHeight">행간</label>
+                                        <div class="stepper-minimal">
+                                            <button type="button" onclick="stepInput('bubbleLineHeight', -2)">-</button>
+                                            <input type="number" id="bubbleLineHeight" value="20" />
+                                            <button type="button" onclick="stepInput('bubbleLineHeight', 2)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="field-col">
+                                        <label for="bubblePadding">내부여백</label>
+                                        <div class="stepper-minimal">
+                                            <button type="button" onclick="stepInput('bubblePadding', -2)">-</button>
+                                            <input type="number" id="bubblePadding" value="12" />
+                                            <button type="button" onclick="stepInput('bubblePadding', 2)">+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -702,7 +806,7 @@
                                     <label><input type="checkbox" id="enableTextShadow" /> 그림자 효과</label>
                                 </div>
 
-                                <div class="swatch-grid cols-3">
+                                <div class="swatch-grid cols-5">
                                     <div class="swatch-cell">
                                         <input type="color" id="quoteColorA" value="#a8cf6e" />
                                         <span>따옴표 A</span>
@@ -767,7 +871,7 @@
                 </section>
             </main>
         </div>
-
+        <div id="mouseTooltip" class="mouse-tooltip"></div>
         <script src="presets.js"></script>
         <script src="script.js"></script>
     </body>
