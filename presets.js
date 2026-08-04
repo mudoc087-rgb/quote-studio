@@ -174,6 +174,8 @@ window.savePreset = function () {
         "bubbleTextColorLeft",
         "bubbleColorRight",
         "bubbleTextColorRight",
+        "bubbleTextSize",
+        "bubbleLineHeight",
         "enableQuoteColor",
         "quoteColorA",
         "quoteColorB",
