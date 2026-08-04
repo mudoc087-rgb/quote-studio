@@ -39,7 +39,9 @@ const els = {
     bubbleTextColorLeft: document.getElementById("bubbleTextColorLeft"),
     bubbleColorRight: document.getElementById("bubbleColorRight"),
     bubbleTextColorRight: document.getElementById("bubbleTextColorRight"),
-
+    bubbleFontSize: document.getElementById("bubbleFontSize"),
+    bubbleLineHeight: document.getElementById("bubbleLineHeight"),
+    bubblePadding: document.getElementById("bubblePadding"),
     enableQuoteColor: document.getElementById("enableQuoteColor"),
     quoteColorA: document.getElementById("quoteColorA"),
     quoteColorB: document.getElementById("quoteColorB"),
@@ -78,8 +80,19 @@ function applyBubbleColors(container) {
         const inner = b.querySelector(".bubble-inner") || b;
         const isRight = b.classList.contains("side-right");
         const textNode = b.querySelector(".bubble-text") || inner;
+
         textNode.style.wordBreak = els.wordBreak ? els.wordBreak.value : "keep-all";
 
+        if (els.bubbleFontSize && els.bubbleFontSize.value) {
+            textNode.style.fontSize = `${els.bubbleFontSize.value}px`;
+        }
+        if (els.bubbleLineHeight && els.bubbleLineHeight.value) {
+            textNode.style.lineHeight = `${els.bubbleLineHeight.value}px`;
+        }
+
+        if (els.bubblePadding && els.bubblePadding.value) {
+            inner.style.padding = `${els.bubblePadding.value}px`;
+        }
         const rightBg = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
         const rightText = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
 
@@ -1540,12 +1553,19 @@ function renderMembers() {
         topArea.appendChild(delBtn);
 
         // 하단: 색상 선택기 5종 (이름, 배경, 따옴표, 강조선, 괄호)
+        // 하단: 색상 선택기 5종 (이름, 배경, 따옴표, 강조선, 괄호)
         const colorsWrapper = document.createElement("div");
         colorsWrapper.className = "member-colors-row";
 
-        const createColorPicker = (labelName, propName, initValue) => {
+        // 💡 도움말(helpText) 파라미터 추가
+        const createColorPicker = (labelName, propName, initValue, helpText) => {
             const label = document.createElement("label");
             label.className = "member-color-item";
+
+            // 💡 툴팁을 위한 data-help 속성 부여
+            if (helpText) {
+                label.setAttribute("data-help", helpText);
+            }
 
             const input = document.createElement("input");
             input.type = "color";
@@ -1575,12 +1595,15 @@ function renderMembers() {
             label.appendChild(span);
             return label;
         };
-
-        colorsWrapper.appendChild(createColorPicker("이름", "color", member.color));
-        colorsWrapper.appendChild(createColorPicker("배경", "bubbleBg", member.bubbleBg));
-        colorsWrapper.appendChild(createColorPicker("따옴표", "quoteColor", member.quoteColor));
-        colorsWrapper.appendChild(createColorPicker("선", "lineColor", member.lineColor));
-        colorsWrapper.appendChild(createColorPicker("괄호", "parenColor", member.parenColor));
+        colorsWrapper.appendChild(createColorPicker("이름", "color", member.color, "(말풍선 강조선 공통) 이름색"));
+        colorsWrapper.appendChild(createColorPicker("배경", "bubbleBg", member.bubbleBg, "말풍선 배경"));
+        colorsWrapper.appendChild(
+            createColorPicker("따옴표", "quoteColor", member.quoteColor, "(말풍선 강조선 공통) 따옴표색")
+        );
+        colorsWrapper.appendChild(createColorPicker("선", "lineColor", member.lineColor, "강조선색"));
+        colorsWrapper.appendChild(
+            createColorPicker("괄호", "parenColor", member.parenColor, "(말풍선 강조선 공통) 괄호색")
+        );
 
         row.appendChild(topArea);
         row.appendChild(colorsWrapper);
@@ -1930,6 +1953,9 @@ document.addEventListener("DOMContentLoaded", () => {
         els.bubbleTextColorLeft,
         els.bubbleColorRight,
         els.bubbleTextColorRight,
+        els.bubbleFontSize,
+        els.bubbleLineHeight,
+        els.bubblePadding,
         els.enableQuoteColor,
         els.quoteColorA,
         els.quoteColorB,
@@ -2372,3 +2398,53 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
 
     restoreCanvasAfterCapture(els.captureArea);
 });
+// --- 마우스 툴팁 도움말 기능 ---
+const btnToggleHelp = document.getElementById("btnToggleHelp");
+const mouseTooltip = document.getElementById("mouseTooltip");
+let isHelpMode = false; // 도움말 모드 상태
+
+if (btnToggleHelp && mouseTooltip) {
+    // 1. 도움말 버튼 클릭 시 모드 켜기/끄기
+    btnToggleHelp.addEventListener("click", () => {
+        isHelpMode = !isHelpMode;
+        document.body.classList.toggle("help-mode-active", isHelpMode);
+
+        if (isHelpMode) {
+            btnToggleHelp.textContent = "도움말 끄기 ❌";
+            btnToggleHelp.style.backgroundColor = "rgba(255, 152, 0, 0.15)";
+        } else {
+            btnToggleHelp.textContent = "도움말 💡";
+            btnToggleHelp.style.backgroundColor = "transparent";
+            mouseTooltip.classList.remove("show"); // 끌 때 툴팁도 바로 숨김
+        }
+    });
+
+    // 2. 마우스 움직임 감지해서 툴팁 따라다니게 하기
+    document.addEventListener("mousemove", (e) => {
+        if (!isHelpMode) return; // 도움말 모드가 아니면 작동 안 함
+
+        // 마우스 커서 아래에 data-help 속성을 가진 요소가 있는지 확인
+        const helpTarget = e.target.closest("[data-help]");
+
+        if (helpTarget) {
+            // 해당 요소의 설명을 툴팁 안에 넣기
+            mouseTooltip.textContent = helpTarget.getAttribute("data-help");
+
+            // 툴팁 위치를 마우스 커서 우측 하단으로 살짝 띄우기
+            let tooltipX = e.clientX + 15;
+            let tooltipY = e.clientY + 15;
+
+            // 화면 우측 밖으로 툴팁이 잘리지 않도록 위치 보정
+            if (tooltipX + mouseTooltip.offsetWidth > window.innerWidth) {
+                tooltipX = e.clientX - mouseTooltip.offsetWidth - 15;
+            }
+
+            mouseTooltip.style.left = tooltipX + "px";
+            mouseTooltip.style.top = tooltipY + "px";
+            mouseTooltip.classList.add("show");
+        } else {
+            // 설명이 없는 곳에선 툴팁 숨기기
+            mouseTooltip.classList.remove("show");
+        }
+    });
+}
