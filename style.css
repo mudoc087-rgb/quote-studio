@@ -482,7 +482,7 @@ input::placeholder {
 
 .chat-bubble .bubble-text {
     font-size: 0.9em !important;
-    line-height: calc(var(--parent-lh, 1.5) * 0.9) !important;
+    line-height: calc((var(--parent-lh, 22px) / var(--parent-fs, 16px)) * 0.7) !important;
     word-break: keep-all;
     text-align: justify;
     display: inline-block;
