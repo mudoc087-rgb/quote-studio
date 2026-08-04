@@ -1464,7 +1464,6 @@ document.getElementById("btnToggleMemberPanel")?.addEventListener("click", () =>
     }
 });
 
-// [script.js] renderMembers 함수 전체 교체 (1행 2열 전용 심플 레이아웃)
 function renderMembers() {
     const container = document.getElementById("memberListContainer");
     if (!container) return;
@@ -1474,7 +1473,6 @@ function renderMembers() {
         const row = document.createElement("div");
         row.className = "member-card";
 
-        // 상단: 프로필 버튼 + 이름 입력 + 삭제 버튼
         const topArea = document.createElement("div");
         topArea.className = "member-card-top";
 
@@ -1552,17 +1550,13 @@ function renderMembers() {
         topArea.appendChild(nameInput);
         topArea.appendChild(delBtn);
 
-        // 하단: 색상 선택기 5종 (이름, 배경, 따옴표, 강조선, 괄호)
-        // 하단: 색상 선택기 5종 (이름, 배경, 따옴표, 강조선, 괄호)
         const colorsWrapper = document.createElement("div");
         colorsWrapper.className = "member-colors-row";
 
-        // 💡 도움말(helpText) 파라미터 추가
         const createColorPicker = (labelName, propName, initValue, helpText) => {
             const label = document.createElement("label");
             label.className = "member-color-item";
 
-            // 💡 툴팁을 위한 data-help 속성 부여
             if (helpText) {
                 label.setAttribute("data-help", helpText);
             }
@@ -2398,13 +2392,11 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
 
     restoreCanvasAfterCapture(els.captureArea);
 });
-// --- 마우스 툴팁 도움말 기능 ---
+
 const btnToggleHelp = document.getElementById("btnToggleHelp");
 const mouseTooltip = document.getElementById("mouseTooltip");
-let isHelpMode = false; // 도움말 모드 상태
-
+let isHelpMode = false;
 if (btnToggleHelp && mouseTooltip) {
-    // 1. 도움말 버튼 클릭 시 모드 켜기/끄기
     btnToggleHelp.addEventListener("click", () => {
         isHelpMode = !isHelpMode;
         document.body.classList.toggle("help-mode-active", isHelpMode);
@@ -2415,26 +2407,20 @@ if (btnToggleHelp && mouseTooltip) {
         } else {
             btnToggleHelp.textContent = "도움말 💡";
             btnToggleHelp.style.backgroundColor = "transparent";
-            mouseTooltip.classList.remove("show"); // 끌 때 툴팁도 바로 숨김
+            mouseTooltip.classList.remove("show");
         }
     });
 
-    // 2. 마우스 움직임 감지해서 툴팁 따라다니게 하기
     document.addEventListener("mousemove", (e) => {
-        if (!isHelpMode) return; // 도움말 모드가 아니면 작동 안 함
-
-        // 마우스 커서 아래에 data-help 속성을 가진 요소가 있는지 확인
+        if (!isHelpMode) return;
         const helpTarget = e.target.closest("[data-help]");
 
         if (helpTarget) {
-            // 해당 요소의 설명을 툴팁 안에 넣기
             mouseTooltip.textContent = helpTarget.getAttribute("data-help");
 
-            // 툴팁 위치를 마우스 커서 우측 하단으로 살짝 띄우기
             let tooltipX = e.clientX + 15;
             let tooltipY = e.clientY + 15;
 
-            // 화면 우측 밖으로 툴팁이 잘리지 않도록 위치 보정
             if (tooltipX + mouseTooltip.offsetWidth > window.innerWidth) {
                 tooltipX = e.clientX - mouseTooltip.offsetWidth - 15;
             }
@@ -2443,7 +2429,6 @@ if (btnToggleHelp && mouseTooltip) {
             mouseTooltip.style.top = tooltipY + "px";
             mouseTooltip.classList.add("show");
         } else {
-            // 설명이 없는 곳에선 툴팁 숨기기
             mouseTooltip.classList.remove("show");
         }
     });
