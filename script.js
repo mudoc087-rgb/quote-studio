@@ -341,6 +341,8 @@ function updateCanvas() {
         textWrapper.style.textAlign = els.alignH.value;
         textWrapper.style.letterSpacing = `${els.letterSpacing.value}px`;
         textWrapper.style.lineHeight = `${els.lineHeight.value}px`;
+        textWrapper.style.setProperty("--parent-lh", `${els.lineHeight.value}px`);
+        textWrapper.style.setProperty("--parent-fs", `${els.fontSize.value}px`);
         textWrapper.style.whiteSpace = "pre-wrap";
         textWrapper.style.wordBreak = els.wordBreak.value;
 
@@ -362,6 +364,7 @@ function updateCanvas() {
             els.editor.style.fontWeight = els.bodyWeight ? els.bodyWeight.value : "400";
             els.editor.style.color = els.globalTextColor.value;
             els.editor.style.setProperty("--parent-lh", `${els.lineHeight.value}px`);
+            els.editor.style.setProperty("--parent-fs", `${els.fontSize.value}px`);
         }
 
         applyBubbleColors(els.editor);
