@@ -411,7 +411,17 @@ function updateCanvas() {
         const scaleFactor = (parseInt(els.fontScaleX.value) || 100) / 100;
         textWrapper.style.display = "block";
         applyHorizontalScale(textWrapper, scaleFactor, els.alignH.value);
-
+        const canvasImages = textWrapper.querySelectorAll(".content-image-block");
+        canvasImages.forEach((block) => {
+            const img = block.querySelector(".content-image-inner");
+            if (img) {
+                if (img.complete && img.naturalWidth) {
+                    updateContentImageGeometry(block);
+                } else {
+                    img.onload = () => updateContentImageGeometry(block);
+                }
+            }
+        });
         const allParagraphs = textWrapper.querySelectorAll(
             "#canvasTextWrapper > div, #canvasTextWrapper > p, #canvasTextWrapper > .dialogue-line, #canvasTextWrapper > .chat-bubble"
         );
@@ -706,7 +716,74 @@ function syncLiveHighlights(overrideColors = null) {
     if (els.quoteColorB) lastQuoteColorBManual = els.quoteColorB.value;
 }
 
-function prepareCanvasForCapture(container) {
+function bakeBackgroundBlurForCapture(container) {
+    return new Promise((resolve) => {
+        const bgLayer = container.querySelector ? container.querySelector("#bgImageLayer") : null;
+        const layer = bgLayer || document.getElementById("bgImageLayer");
+        if (!layer) return resolve();
+
+        const bgImageValue = layer.style.backgroundImage;
+        const urlMatch = bgImageValue && bgImageValue.match(/url\((['"]?)(.*?)\1\)/);
+        const blurInput = document.getElementById("bgImageBlur");
+        const blurPx = blurInput ? parseFloat(blurInput.value) || 0 : 0;
+
+        if (!urlMatch || !urlMatch[2] || blurPx <= 0) return resolve();
+
+        const srcUrl = urlMatch[2];
+        const rect = layer.getBoundingClientRect();
+        const w = Math.max(1, Math.round(rect.width));
+        const h = Math.max(1, Math.round(rect.height));
+
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+
+                // background-size: cover 와 동일하게 이미지 배율/오프셋 계산
+                const coverScale = Math.max(w / img.width, h / img.height);
+                const drawW = img.width * coverScale;
+                const drawH = img.height * coverScale;
+                const dx = (w - drawW) / 2;
+                const dy = (h - drawH) / 2;
+
+                ctx.filter = `blur(${blurPx}px)`;
+                ctx.drawImage(img, dx, dy, drawW, drawH);
+
+                layer.dataset.originalBgImage = bgImageValue;
+                layer.dataset.originalFilter = layer.style.filter || "";
+                layer.style.backgroundImage = `url(${canvas.toDataURL("image/png")})`;
+                layer.style.filter = "none";
+            } catch (err) {
+                console.error("배경 블러 구워넣기 실패:", err);
+            }
+            resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = srcUrl;
+    });
+}
+
+function restoreBackgroundBlurAfterCapture(container) {
+    const bgLayer = container.querySelector ? container.querySelector("#bgImageLayer") : null;
+    const layer = bgLayer || document.getElementById("bgImageLayer");
+    if (!layer) return;
+
+    if (layer.dataset.originalBgImage !== undefined) {
+        layer.style.backgroundImage = layer.dataset.originalBgImage;
+        delete layer.dataset.originalBgImage;
+    }
+    if (layer.dataset.originalFilter !== undefined) {
+        layer.style.filter = layer.dataset.originalFilter;
+        delete layer.dataset.originalFilter;
+    }
+}
+
+async function prepareCanvasForCapture(container) {
+    await bakeBackgroundBlurForCapture(container);
+
     const targetSpans = container.querySelectorAll("span");
     targetSpans.forEach((span) => {
         if (
@@ -745,6 +822,8 @@ function restoreCanvasAfterCapture(container) {
         span.style.backgroundColor = restoredBg;
         span.removeAttribute("data-original-html");
     });
+
+    restoreBackgroundBlurAfterCapture(container);
 }
 
 document.getElementById("btnBold").addEventListener("click", () => {
@@ -1270,6 +1349,41 @@ document.getElementById("inlineImageInput").addEventListener("change", function 
     reader.readAsDataURL(file);
 });
 
+function updateContentImageGeometry(block) {
+    if (!block) return;
+    const inner = block.querySelector(".content-image-inner");
+    if (!inner || !inner.naturalWidth || !inner.naturalHeight) return;
+
+    const boxW = block.clientWidth;
+    const boxH = block.clientHeight;
+    if (!boxW || !boxH) return;
+
+    const scale = parseFloat(block.dataset.scale || "100") / 100;
+    const posX = parseFloat(block.dataset.posX || "50");
+    const posY = parseFloat(block.dataset.posY || "50");
+
+    const baseScale = boxW / inner.naturalWidth;
+
+    const drawW = inner.naturalWidth * baseScale * scale;
+    const drawH = inner.naturalHeight * baseScale * scale;
+
+    let left = (boxW - drawW) / 2;
+    if (drawW > boxW) {
+        left += ((posX - 50) * (drawW - boxW)) / 100;
+    }
+
+    let top = (boxH - drawH) / 2;
+    if (drawH > boxH) {
+        top += ((posY - 50) * (drawH - boxH)) / 100;
+    }
+
+    inner.style.position = "absolute";
+    inner.style.left = `${left}px`;
+    inner.style.top = `${top}px`;
+    inner.style.width = `${drawW}px`;
+    inner.style.height = `${drawH}px`;
+}
+
 function insertImageBlock(dataUrl) {
     els.editor.focus();
     const selection = window.getSelection();
@@ -1289,15 +1403,16 @@ function insertImageBlock(dataUrl) {
     block.className = "content-image-block";
     block.setAttribute("contenteditable", "false");
     block.style.height = "240px";
+    block.style.width = "100%";
     block.dataset.scale = "100";
     block.dataset.posX = "50";
     block.dataset.posY = "50";
 
-    const inner = document.createElement("div");
+    const inner = document.createElement("img");
     inner.className = "content-image-inner";
-    inner.style.backgroundImage = `url(${dataUrl})`;
-    inner.style.backgroundSize = "100% auto";
-    inner.style.backgroundPosition = "50% 50%";
+    inner.draggable = false;
+    inner.onload = () => updateContentImageGeometry(block);
+    inner.src = dataUrl;
 
     const resizeHandle = document.createElement("div");
     resizeHandle.className = "content-image-resize-handle";
@@ -1337,7 +1452,7 @@ els.editor.addEventListener(
         const delta = e.deltaY > 0 ? -5 : 5;
         scale = Math.min(400, Math.max(20, scale + delta));
         block.dataset.scale = String(scale);
-        inner.style.backgroundSize = `${scale}% auto`;
+        updateContentImageGeometry(block);
         updateCanvas();
     },
     { passive: false }
@@ -1392,12 +1507,14 @@ function handleImgDragMove(e) {
     if (imgDragState.type === "resize") {
         const deltaY = point.y - imgDragState.startY;
         imgDragState.block.style.height = `${Math.max(60, imgDragState.startHeight + deltaY)}px`;
+        updateContentImageGeometry(imgDragState.block);
     } else if (imgDragState.type === "resize-width") {
         const deltaX = point.x - imgDragState.startX;
         const containerWidth = imgDragState.block.parentElement.getBoundingClientRect().width;
         const minWidth = containerWidth * 0.3;
         const newWidth = Math.min(containerWidth, Math.max(minWidth, imgDragState.startWidth + deltaX * 2));
-        imgDragState.block.style.width = `${newWidth}px`;
+        imgDragState.block.style.width = `${(newWidth / containerWidth) * 100}%`;
+        updateContentImageGeometry(imgDragState.block);
     } else if (imgDragState.type === "move") {
         const rect = imgDragState.block.getBoundingClientRect();
         const deltaX = point.x - imgDragState.startX;
@@ -1406,7 +1523,7 @@ function handleImgDragMove(e) {
         const posY = Math.min(100, Math.max(0, imgDragState.startPosY - (deltaY / rect.height) * 100));
         imgDragState.block.dataset.posX = String(posX);
         imgDragState.block.dataset.posY = String(posY);
-        imgDragState.inner.style.backgroundPosition = `${posX}% ${posY}%`;
+        updateContentImageGeometry(imgDragState.block);
     }
     if (e.cancelable) e.preventDefault();
 }
@@ -1684,6 +1801,39 @@ document.getElementById("btnAutoChatParse")?.addEventListener("click", () => {
     updateCanvas();
 });
 
+// 프로필 사진을 background-image가 아닌 실제 <img> 태그로 렌더링해서
+// 캡처(html2canvas) 시 화질이 깨지지 않도록 하는 공용 헬퍼
+function setBubbleProfileVisual(wrapperEl, profileUrl, fallbackColor) {
+    if (!wrapperEl) return;
+
+    wrapperEl.style.position = wrapperEl.style.position || "relative";
+    wrapperEl.style.overflow = "hidden";
+
+    let imgEl = wrapperEl.querySelector(".bubble-profile-img");
+
+    if (profileUrl) {
+        wrapperEl.style.backgroundImage = "none";
+        wrapperEl.style.backgroundColor = "transparent";
+
+        if (!imgEl) {
+            imgEl = document.createElement("img");
+            imgEl.className = "bubble-profile-img";
+            imgEl.style.display = "block";
+            imgEl.style.width = "100%";
+            imgEl.style.height = "100%";
+            imgEl.style.objectFit = "cover";
+            imgEl.style.objectPosition = "center";
+            imgEl.style.pointerEvents = "none";
+            wrapperEl.appendChild(imgEl);
+        }
+        imgEl.src = profileUrl;
+    } else {
+        if (imgEl) imgEl.remove();
+        wrapperEl.style.backgroundImage = "none";
+        wrapperEl.style.backgroundColor = fallbackColor || "";
+    }
+}
+
 function createParsedBubble(speakerName, contentStr) {
     let member = chatMembers.find((m) => m.name === speakerName);
     if (!member) member = chatMembers[0];
@@ -1697,12 +1847,7 @@ function createParsedBubble(speakerName, contentStr) {
     const profileImg = document.createElement("div");
     profileImg.className = "bubble-profile";
     profileImg.setAttribute("data-action", "change-member");
-    if (member.profile) {
-        profileImg.style.backgroundImage = `url(${member.profile})`;
-        profileImg.style.backgroundColor = "transparent";
-    } else {
-        profileImg.style.backgroundColor = member.color;
-    }
+    setBubbleProfileVisual(profileImg, member.profile, member.color);
 
     const contentCol = document.createElement("div");
     contentCol.className = "bubble-content-col";
@@ -1810,15 +1955,12 @@ document.getElementById("textEditor").addEventListener("click", (e) => {
                     profileImg.style.width = "24px";
                     profileImg.style.height = "24px";
                     profileImg.style.borderRadius = "50%";
-                    profileImg.style.backgroundSize = "cover";
                     profileImg.setAttribute("data-action", "change-member");
                     speaker.parentNode.insertBefore(profileImg, speaker);
                 }
-                profileImg.style.backgroundImage = `url(${nextMember.profile})`;
-                profileImg.style.backgroundColor = "transparent";
+                setBubbleProfileVisual(profileImg, nextMember.profile, nextMember.color);
             } else if (profileImg) {
-                profileImg.style.backgroundImage = "none";
-                profileImg.style.backgroundColor = nextMember.color;
+                setBubbleProfileVisual(profileImg, null, nextMember.color);
             }
 
             updateCanvas();
@@ -1990,11 +2132,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 50);
 });
 
-document.getElementById("btnCopy").addEventListener("click", () => {
+document.getElementById("btnCopy").addEventListener("click", async () => {
     if (!els.captureArea) return;
     const originalHeight = els.captureArea.style.height;
     if (els.ratioSelect.value === "free") els.captureArea.style.height = els.captureArea.scrollHeight + "px";
-    prepareCanvasForCapture(els.captureArea);
+    await prepareCanvasForCapture(els.captureArea);
     html2canvas(els.captureArea, { useCORS: true, allowTaint: true, backgroundColor: null, scale: 2 })
         .then((canvas) => {
             restoreCanvasAfterCapture(els.captureArea);
@@ -2013,12 +2155,12 @@ document.getElementById("btnCopy").addEventListener("click", () => {
         });
 });
 
-document.getElementById("btnSave").addEventListener("click", () => {
+document.getElementById("btnSave").addEventListener("click", async () => {
     if (!els.captureArea) return;
     const originalWidth = els.captureArea.style.width;
     const originalHeight = els.captureArea.style.height;
     if (els.ratioSelect.value === "free") els.captureArea.style.height = els.captureArea.scrollHeight + "px";
-    prepareCanvasForCapture(els.captureArea);
+    await prepareCanvasForCapture(els.captureArea);
     html2canvas(els.captureArea, { useCORS: true, allowTaint: true, backgroundColor: null, scale: 2 })
         .then((canvas) => {
             restoreCanvasAfterCapture(els.captureArea);
@@ -2263,7 +2405,7 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
         return;
     }
 
-    prepareCanvasForCapture(els.captureArea);
+    await prepareCanvasForCapture(els.captureArea);
 
     function promoteDividersToTopLevel(root) {
         const dividers = Array.from(root.querySelectorAll(".page-break-line"));
