@@ -882,6 +882,8 @@ input[type="range"] {
     background-color: #f7f7f7;
     cursor: grab;
     touch-action: none;
+    background-position: 50% 50%;
+    background-size: 100% auto;
 }
 
 .content-image-inner:active {
