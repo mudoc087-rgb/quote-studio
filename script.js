@@ -69,6 +69,7 @@ const els = {
     textShadowBlur: document.getElementById("textShadowBlur"),
 
     autoParenBreak: document.getElementById("autoParenBreak"),
+    toggleQuotes: document.getElementById("toggleQuotes"),
     layoutSelect: document.getElementById("layoutSelect"),
     midGap: document.getElementById("midGap")
 };
@@ -300,6 +301,16 @@ function updateCanvas() {
 
         const canvasBubbles = textWrapper.querySelectorAll(".chat-bubble");
         canvasBubbles.forEach((bubble) => {
+            if (els.toggleQuotes && els.toggleQuotes.checked) {
+                const textNode =
+                    bubble.querySelector(".bubble-text") || bubble.querySelector(".bubble-inner") || bubble;
+                const walk = document.createTreeWalker(textNode, NodeFilter.SHOW_TEXT, null, false);
+                let n;
+                while ((n = walk.nextNode())) {
+                    n.nodeValue = n.nodeValue.replace(/["“”]/g, "");
+                }
+            }
+
             const memberId = bubble.getAttribute("data-member-id");
             const member = chatMembers.find((m) => m.id == memberId);
             if (member) {
@@ -2574,4 +2585,7 @@ if (btnToggleHelp && mouseTooltip) {
             mouseTooltip.classList.remove("show");
         }
     });
+}
+if (els.toggleQuotes) {
+    els.toggleQuotes.addEventListener("change", updateCanvas);
 }
