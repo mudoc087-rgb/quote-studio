@@ -422,8 +422,22 @@ function updateCanvas() {
         const scaleFactor = (parseInt(els.fontScaleX.value) || 100) / 100;
         textWrapper.style.display = "block";
         applyHorizontalScale(textWrapper, scaleFactor, els.alignH.value);
+        const editorImages = els.editor.querySelectorAll(".content-image-block");
         const canvasImages = textWrapper.querySelectorAll(".content-image-block");
-        canvasImages.forEach((block) => {
+        const originAlign =
+            els.alignH.value === "center" ? "center top" : els.alignH.value === "right" ? "right top" : "left top";
+        canvasImages.forEach((block, idx) => {
+            const editorBlock = editorImages[idx];
+            if (editorBlock && editorBlock.clientWidth > 0) {
+                const ratio = editorBlock.clientHeight / editorBlock.clientWidth;
+                block.style.height = `${block.clientWidth * ratio}px`;
+            }
+            if (scaleFactor !== 1) {
+                block.style.transform = `scaleX(${1 / scaleFactor})`;
+                block.style.transformOrigin = originAlign;
+            } else {
+                block.style.transform = "";
+            }
             const img = block.querySelector(".content-image-inner");
             if (img) {
                 if (img.complete && img.naturalWidth) {
