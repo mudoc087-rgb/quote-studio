@@ -677,16 +677,24 @@ input[type="range"] {
     height: 26px;
 }
 
-/* 1. 대화 라인 & 인라인 블록 */
 .dialogue-line {
     position: relative;
     padding-left: 14px;
-    border-left: 2px solid var(--quote-line-color-a, var(--color-text-main));
     margin: 4px 0;
 }
 
-.dialogue-line[data-line-variant="B"] {
-    border-left-color: var(--quote-line-color-b, var(--color-text-main));
+.dialogue-line::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: calc(2px * var(--line-scale-fix, 1));
+    background: var(--quote-line-color-a, var(--color-text-main));
+}
+
+.dialogue-line[data-line-variant="B"]::before {
+    background: var(--quote-line-color-b, var(--color-text-main));
 }
 
 .fade-divider-line {
