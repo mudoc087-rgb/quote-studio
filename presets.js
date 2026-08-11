@@ -179,6 +179,7 @@ window.savePreset = function () {
         "enableQuoteColor",
         "quoteColorA",
         "quoteColorB",
+        "quoteColorC",
         "enableParenColor",
         "parenColorA",
         "parenColorB",
