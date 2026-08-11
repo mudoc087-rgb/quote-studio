@@ -422,12 +422,12 @@ function updateCanvas() {
         const scaleFactor = (parseInt(els.fontScaleX.value) || 100) / 100;
         textWrapper.style.display = "block";
         applyHorizontalScale(textWrapper, scaleFactor, els.alignH.value);
-      const scaleLines = textWrapper.querySelectorAll(".dialogue-line");
+        const scaleLines = textWrapper.querySelectorAll(".dialogue-line");
         scaleLines.forEach((line) => {
             if (scaleFactor !== 1) {
-                line.style.borderLeftWidth = `${2 / scaleFactor}px`;
+                line.style.setProperty("--line-scale-fix", 1 / scaleFactor);
             } else {
-                line.style.borderLeftWidth = "";
+                line.style.removeProperty("--line-scale-fix");
             }
         });
         const editorImages = els.editor.querySelectorAll(".content-image-block");
