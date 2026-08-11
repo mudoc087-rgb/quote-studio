@@ -1342,10 +1342,3 @@ body.help-mode-active [data-help] {
 body.help-mode-active [data-help]:hover {
     outline: 2px solid rgba(255, 152, 0, 1);
 }
-/* 강조선 클래스에 픽셀 스냅 적용 */
-.dialogue-line, 
-.fade-divider-line {
-    box-sizing: border-box;
-    image-rendering: pixelated; 
-    transform: translateZ(0); 
-}
