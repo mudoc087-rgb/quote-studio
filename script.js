@@ -422,18 +422,14 @@ function updateCanvas() {
         const scaleFactor = (parseInt(els.fontScaleX.value) || 100) / 100;
         textWrapper.style.display = "block";
         applyHorizontalScale(textWrapper, scaleFactor, els.alignH.value);
-        const scaleLines = textWrapper.querySelectorAll('.dialogue-line, .fade-divider-line');
-scaleLines.forEach((line) => {
-    // scaleFactor가 1이 아닐 때 강조선 선명도 보정
-    if (scaleFactor !== 1) {
-        // transform 스케일 변형에 영향받지 않도록 벡터 렌더링 힌트 지정 및 두께 보정
-        line.style.vectorEffect = "non-scaling-stroke"; 
-        line.style.transform = "translateZ(0)"; // 하드웨어 가속으로 픽셀 렌더링 반올림 방지
-    } else {
-        line.style.vectorEffect = "";
-        line.style.transform = "";
-    }
-});
+      const scaleLines = textWrapper.querySelectorAll(".dialogue-line");
+        scaleLines.forEach((line) => {
+            if (scaleFactor !== 1) {
+                line.style.borderLeftWidth = `${2 / scaleFactor}px`;
+            } else {
+                line.style.borderLeftWidth = "";
+            }
+        });
         const editorImages = els.editor.querySelectorAll(".content-image-block");
         const canvasImages = textWrapper.querySelectorAll(".content-image-block");
         const originAlign =
