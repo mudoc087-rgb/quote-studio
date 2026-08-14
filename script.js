@@ -432,20 +432,41 @@ function updateCanvas() {
         });
         const editorImages = els.editor.querySelectorAll(".content-image-block");
         const canvasImages = textWrapper.querySelectorAll(".content-image-block");
-        const originAlign =
-            els.alignH.value === "center" ? "center top" : els.alignH.value === "right" ? "right top" : "left top";
+
         canvasImages.forEach((block, idx) => {
             const editorBlock = editorImages[idx];
-            if (editorBlock && editorBlock.clientWidth > 0) {
-                const ratio = editorBlock.clientHeight / editorBlock.clientWidth;
-                block.style.height = `${block.clientWidth * ratio}px`;
+            let baseWidthVal = "100%";
+
+            if (editorBlock && editorBlock.style.width) {
+                baseWidthVal = editorBlock.style.width;
             }
-            if (scaleFactor !== 1) {
-                block.style.transform = `scaleX(${1 / scaleFactor})`;
-                block.style.transformOrigin = originAlign;
+            block.dataset.baseWidth = baseWidthVal;
+
+            block.style.removeProperty("transform");
+            block.style.removeProperty("transform-origin");
+            block.style.transform = "none";
+
+            if (scaleFactor !== 1 && scaleFactor > 0) {
+                const unscale = 1 / scaleFactor;
+                block.style.transform = `scaleX(${unscale})`;
+                block.style.transformOrigin = "center top";
+            }
+
+            if (baseWidthVal.includes("px")) {
+                const pxVal = parseFloat(baseWidthVal);
+                block.style.width = `${pxVal}px`;
             } else {
-                block.style.transform = "";
+                const percentVal = parseFloat(baseWidthVal) || 100;
+                block.style.width = `${percentVal}%`;
             }
+
+            block.style.boxSizing = "border-box";
+            block.style.maxWidth = "100%";
+            block.style.marginLeft = "auto";
+            block.style.marginRight = "auto";
+            block.style.display = "block";
+            block.style.clear = "both";
+
             const img = block.querySelector(".content-image-inner");
             if (img) {
                 if (img.complete && img.naturalWidth) {
@@ -775,7 +796,6 @@ function bakeBackgroundBlurForCapture(container) {
                 canvas.height = h;
                 const ctx = canvas.getContext("2d");
 
-                // background-size: cover 와 동일하게 이미지 배율/오프셋 계산
                 const coverScale = Math.max(w / img.width, h / img.height);
                 const drawW = img.width * coverScale;
                 const drawH = img.height * coverScale;
@@ -817,6 +837,18 @@ function restoreBackgroundBlurAfterCapture(container) {
 async function prepareCanvasForCapture(container) {
     await bakeBackgroundBlurForCapture(container);
 
+    container.querySelectorAll(".content-image-block").forEach((block) => {
+        updateContentImageGeometry(block);
+    });
+
+    container
+        .querySelectorAll(
+            ".content-image-resize-handle, .content-image-resize-handle-left, .content-image-resize-handle-right"
+        )
+        .forEach((h) => {
+            h.style.display = "none";
+        });
+
     const targetSpans = container.querySelectorAll("span");
     targetSpans.forEach((span) => {
         if (
@@ -847,6 +879,14 @@ async function prepareCanvasForCapture(container) {
 }
 
 function restoreCanvasAfterCapture(container) {
+    container
+        .querySelectorAll(
+            ".content-image-resize-handle, .content-image-resize-handle-left, .content-image-resize-handle-right"
+        )
+        .forEach((h) => {
+            h.style.display = "";
+        });
+
     const targetSpans = container.querySelectorAll("span[data-original-html]");
     targetSpans.forEach((span) => {
         const originalHTML = span.getAttribute("data-original-html");
@@ -1387,18 +1427,19 @@ function updateContentImageGeometry(block) {
     const inner = block.querySelector(".content-image-inner");
     if (!inner || !inner.naturalWidth || !inner.naturalHeight) return;
 
-    const boxW = block.clientWidth;
-    const boxH = block.clientHeight;
+    const rect = block.getBoundingClientRect();
+    const boxW = rect.width;
+    const boxH = rect.height;
     if (!boxW || !boxH) return;
 
     const scale = parseFloat(block.dataset.scale || "100") / 100;
     const posX = parseFloat(block.dataset.posX || "50");
     const posY = parseFloat(block.dataset.posY || "50");
 
-    const baseScale = boxW / inner.naturalWidth;
+    const baseScale = Math.max(boxW / inner.naturalWidth, boxH / inner.naturalHeight);
 
-    const drawW = inner.naturalWidth * baseScale * scale;
-    const drawH = inner.naturalHeight * baseScale * scale;
+    const drawW = Math.ceil(inner.naturalWidth * baseScale * scale);
+    const drawH = Math.ceil(inner.naturalHeight * baseScale * scale);
 
     let left = (boxW - drawW) / 2;
     if (drawW > boxW) {
@@ -1410,13 +1451,30 @@ function updateContentImageGeometry(block) {
         top += ((posY - 50) * (drawH - boxH)) / 100;
     }
 
-    inner.style.position = "absolute";
     inner.style.left = `${left}px`;
     inner.style.top = `${top}px`;
     inner.style.width = `${drawW}px`;
     inner.style.height = `${drawH}px`;
+    inner.style.maxWidth = "none";
+    inner.style.maxHeight = "none";
+}
+function getMatchingEditorBlock(canvasBlock) {
+    const canvasImages = Array.from(document.querySelectorAll("#canvasTextWrapper .content-image-block"));
+    const idx = canvasImages.indexOf(canvasBlock);
+    if (idx === -1) return null;
+    const editorImages = els.editor.querySelectorAll(".content-image-block");
+    return editorImages[idx] || null;
 }
 
+function syncImageBlockToEditor(canvasBlock) {
+    const editorBlock = getMatchingEditorBlock(canvasBlock);
+    if (!editorBlock) return;
+    editorBlock.style.height = canvasBlock.style.height;
+    editorBlock.style.width = canvasBlock.style.width;
+    editorBlock.dataset.scale = canvasBlock.dataset.scale;
+    editorBlock.dataset.posX = canvasBlock.dataset.posX;
+    editorBlock.dataset.posY = canvasBlock.dataset.posY;
+}
 function insertImageBlock(dataUrl) {
     els.editor.focus();
     const selection = window.getSelection();
@@ -1444,7 +1502,6 @@ function insertImageBlock(dataUrl) {
     const inner = document.createElement("img");
     inner.className = "content-image-inner";
     inner.draggable = false;
-    inner.onload = () => updateContentImageGeometry(block);
     inner.src = dataUrl;
 
     const resizeHandle = document.createElement("div");
@@ -1474,7 +1531,7 @@ function insertImageBlock(dataUrl) {
     updateCanvas();
 }
 
-els.editor.addEventListener(
+els.captureArea.addEventListener(
     "wheel",
     (e) => {
         const inner = e.target.closest(".content-image-inner");
@@ -1486,6 +1543,7 @@ els.editor.addEventListener(
         scale = Math.min(400, Math.max(20, scale + delta));
         block.dataset.scale = String(scale);
         updateContentImageGeometry(block);
+        syncImageBlockToEditor(block);
         updateCanvas();
     },
     { passive: false }
@@ -1511,7 +1569,9 @@ function handleImgDragStart(e) {
             type: "resize-width",
             block,
             startX: point.x,
-            startWidth: block.getBoundingClientRect().width
+            startWidth: block.getBoundingClientRect().width,
+
+            isLeft: resizeHandleH.classList.contains("content-image-resize-handle-left")
         };
         e.preventDefault();
     } else if (resizeHandle) {
@@ -1545,15 +1605,35 @@ function handleImgDragMove(e) {
         const deltaX = point.x - imgDragState.startX;
         const containerWidth = imgDragState.block.parentElement.getBoundingClientRect().width;
         const minWidth = containerWidth * 0.3;
-        const newWidth = Math.min(containerWidth, Math.max(minWidth, imgDragState.startWidth + deltaX * 2));
-        imgDragState.block.style.width = `${(newWidth / containerWidth) * 100}%`;
+
+        const directionMultiplier = imgDragState.isLeft ? -1 : 1;
+        const newWidth = Math.min(
+            containerWidth,
+            Math.max(minWidth, imgDragState.startWidth + deltaX * directionMultiplier * 2)
+        );
+
+        const basePercent = (newWidth / containerWidth) * 100;
+        const scaleFactor = (parseInt(document.getElementById("fontScaleX").value) || 100) / 100;
+
+        imgDragState.block.dataset.baseWidth = basePercent;
+        imgDragState.block.style.width = `${basePercent * scaleFactor}%`;
+
         updateContentImageGeometry(imgDragState.block);
     } else if (imgDragState.type === "move") {
         const rect = imgDragState.block.getBoundingClientRect();
+
+        const drawW = imgDragState.inner.getBoundingClientRect().width;
+        const drawH = imgDragState.inner.getBoundingClientRect().height;
+
         const deltaX = point.x - imgDragState.startX;
         const deltaY = point.y - imgDragState.startY;
-        const posX = Math.min(100, Math.max(0, imgDragState.startPosX - (deltaX / rect.width) * 100));
-        const posY = Math.min(100, Math.max(0, imgDragState.startPosY - (deltaY / rect.height) * 100));
+
+        const factorX = drawW > rect.width ? 100 / (drawW - rect.width) : 0;
+        const factorY = drawH > rect.height ? 100 / (drawH - rect.height) : 0;
+
+        const posX = Math.min(100, Math.max(0, imgDragState.startPosX + deltaX * factorX));
+        const posY = Math.min(100, Math.max(0, imgDragState.startPosY + deltaY * factorY));
+
         imgDragState.block.dataset.posX = String(posX);
         imgDragState.block.dataset.posY = String(posY);
         updateContentImageGeometry(imgDragState.block);
@@ -1561,15 +1641,31 @@ function handleImgDragMove(e) {
     if (e.cancelable) e.preventDefault();
 }
 
+function syncImageBlockToEditor(canvasBlock) {
+    const editorBlock = getMatchingEditorBlock(canvasBlock);
+    if (!editorBlock) return;
+    editorBlock.style.height = canvasBlock.style.height;
+
+    if (canvasBlock.dataset.baseWidth) {
+        editorBlock.style.width = `${canvasBlock.dataset.baseWidth}%`;
+    } else {
+        editorBlock.style.width = canvasBlock.style.width;
+    }
+
+    editorBlock.dataset.scale = canvasBlock.dataset.scale;
+    editorBlock.dataset.posX = canvasBlock.dataset.posX;
+    editorBlock.dataset.posY = canvasBlock.dataset.posY;
+}
 function handleImgDragEnd() {
     if (imgDragState) {
+        syncImageBlockToEditor(imgDragState.block);
         imgDragState = null;
         updateCanvas();
     }
 }
 
-els.editor.addEventListener("mousedown", handleImgDragStart);
-els.editor.addEventListener("touchstart", handleImgDragStart, { passive: false });
+els.captureArea.addEventListener("mousedown", handleImgDragStart);
+els.captureArea.addEventListener("touchstart", handleImgDragStart, { passive: false });
 
 document.addEventListener("mousemove", handleImgDragMove);
 document.addEventListener("touchmove", handleImgDragMove, { passive: false });
@@ -1834,8 +1930,6 @@ document.getElementById("btnAutoChatParse")?.addEventListener("click", () => {
     updateCanvas();
 });
 
-// 프로필 사진을 background-image가 아닌 실제 <img> 태그로 렌더링해서
-// 캡처(html2canvas) 시 화질이 깨지지 않도록 하는 공용 헬퍼
 function setBubbleProfileVisual(wrapperEl, profileUrl, fallbackColor) {
     if (!wrapperEl) return;
 
@@ -2540,6 +2634,10 @@ document.getElementById("btnSplitSave").addEventListener("click", async () => {
         clone.querySelectorAll(".bubble-action-btn").forEach((btn) => (btn.style.display = "none"));
 
         document.body.appendChild(clone);
+
+        clone.querySelectorAll(".content-image-block").forEach((block) => {
+            updateContentImageGeometry(block);
+        });
 
         try {
             const canvas = await html2canvas(clone, {
