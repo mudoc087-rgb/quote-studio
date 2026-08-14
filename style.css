@@ -873,7 +873,7 @@ input[type="range"] {
     width: 100%;
     overflow: hidden;
     margin: auto;
-    background: #ff0000;
+    background: #f9f9f9;
     border-radius: 15px;
     user-select: none;
     -webkit-user-select: none;
