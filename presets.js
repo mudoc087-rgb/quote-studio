@@ -88,7 +88,6 @@ document.getElementById("btnClearHighlight").addEventListener("click", () => {
 
 const PRESET_STORAGE_KEY = "excerpt_maker_presets_v2";
 
-// 1. 에러 안전장치를 추가한 불러오기 함수
 function getPresets() {
     try {
         const presets = localStorage.getItem(PRESET_STORAGE_KEY);
@@ -136,7 +135,6 @@ function renderPresets() {
     });
 }
 
-// 2. 용량 초과 에러(먹통 현상)를 완벽하게 차단하고 에러창을 띄워주는 저장 함수
 window.savePreset = function () {
     const nameInput = document.getElementById("presetNameInput");
     const name = nameInput.value.trim();
@@ -147,42 +145,35 @@ window.savePreset = function () {
     }
 
     const targetIds = [
+        // 캔버스 & 레이아웃 설정
         "ratioSelect",
         "canvasWidth",
         "layoutSelect",
         "midGap",
+        "paddingY",
+        "paddingX",
+
+        // 카드 제목 / 부제목 / 하단 정보
+        "cardTitleInput",
+        "titleSize",
+        "titleWeight",
+        "cardSubtitleInput",
+        "subtitleSize",
+        "subtitleWeight",
         "titleInput",
         "creatorInput",
         "infoMarginTop",
-        "paddingY",
-        "paddingX",
-        "paddingY",
-        "paddingX",
+
+        // 배경 설정 (그라데이션 및 이미지 오버레이 포함)
         "bgType",
         "gradColor1",
         "gradColor2",
         "gradColor3",
         "gradientDir",
-        "globalTextColor",
-        "subTextColor",
-        "hlColorA",
-        "hlColorB",
-        "hlColorC",
-        "quoteLineColorA",
-        "quoteLineColorB",
-        "bubbleColorLeft",
-        "bubbleTextColorLeft",
-        "bubbleColorRight",
-        "bubbleTextColorRight",
-        "bubbleFontSize",
-        "bubbleLineHeight",
-        "enableQuoteColor",
-        "quoteColorA",
-        "quoteColorB",
-        "quoteColorC",
-        "enableParenColor",
-        "parenColorA",
-        "parenColorB",
+        "bgOverlayColor",
+        "bgOverlayOpacity",
+
+        // 타이포그래피 & 본문 스타일 설정
         "fontSelect",
         "alignH",
         "wordBreak",
@@ -192,14 +183,44 @@ window.savePreset = function () {
         "lineHeight",
         "paraSpacing",
         "fontScaleX",
-        "titleSize",
-        "titleWeight",
-        "subtitleSize",
-        "subtitleWeight",
+
+        // 텍스트 그림자
         "enableTextShadow",
         "textShadowColor",
         "textShadowBlur",
+
+        // 색상 설정 (글자색, 하이라이트, 강조선 등)
+        "globalTextColor",
+        "subTextColor",
+        "hlColorA",
+        "hlColorB",
+        "hlColorC",
+        "quoteLineColorA",
+        "quoteLineColorB",
+
+        // 스마트 색상 / 강조 설정
+        "enableQuoteColor",
+        "quoteColorA",
+        "quoteColorB",
+        "quoteColorC",
+        "enableParenColor",
+        "parenColorA",
+        "parenColorB",
+
+        // 말풍선 스타일 설정
+        "bubbleColorLeft",
+        "bubbleTextColorLeft",
+        "bubbleColorRight",
+        "bubbleTextColorRight",
+        "bubbleFontSize",
+        "bubbleLineHeight",
+        "bubblePadding",
+        "bubbleGap",
+        "bubbleWidth",
+
+        // 스위치 및 토글 설정
         "autoParenBreak",
+        "toggleQuotes",
         "toggleProfile",
         "toggleName"
     ];
@@ -220,7 +241,6 @@ window.savePreset = function () {
         presetData["savedMembers"] = chatMembers;
     }
 
-    // try-catch 구문으로 감싸서 에러가 나도 먹통이 되지 않게 만듭니다.
     try {
         const presets = getPresets();
         presets[name] = presetData;
@@ -232,7 +252,6 @@ window.savePreset = function () {
     } catch (error) {
         console.error("프리셋 저장 실패:", error);
 
-        // 브라우저 저장 한계(5MB)를 초과했을 때 친절하게 원인을 안내합니다.
         if (error.name === "QuotaExceededError" || error.code === 22) {
             alert(
                 "❌ 저장 용량 초과!\n\n등록하신 인물의 프로필 이미지 용량이 너무 커서 브라우저 저장공간(5MB)을 넘었습니다.\n인물 관리에서 고용량 사진 대신 저용량 이미지나 기본 아이콘으로 교체한 뒤 다시 시도해 주세요."
