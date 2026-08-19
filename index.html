@@ -5,7 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>52발췌기</title>
 
-        <!-- 한글 웹폰트 -->
         <link
             href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Gowun+Dodum&display=swap"
             rel="stylesheet" />
@@ -296,7 +295,7 @@
                                             data-help="이 점선을 기준으로 영역을 나눕니다.&#10;상단의 '분할 저장'을 누르면 이 선을 기준으로 이미지가 잘려서 저장됩니다.">
                                             + 페이지 분할선
                                         </button>
-                                         <button
+                                        <button
                                             id="btnAddHtmlBlock"
                                             class="btn-editor-pill pill-blue"
                                             data-help="본문에 직접 HTML 코드를 작성할 수 있는 HTML 블록을 추가합니다.">
@@ -732,9 +731,9 @@
 
                                 <div class="panel-divider" style="margin: 8px 0"></div>
 
-                                <!-- 말풍선 간격 디테일 (새롭게 분리하여 추가) -->
+                                <!-- 말풍선 간격 디테일 (5열로 확장) -->
                                 <div class="panel-section-title">말풍선 간격 디테일</div>
-                                <div class="field-row cols-3">
+                                <div class="field-row cols-5">
                                     <div class="field-col">
                                         <label for="bubbleFontSize">글자크기</label>
                                         <div class="stepper-minimal">
@@ -757,6 +756,22 @@
                                             <button type="button" onclick="stepInput('bubblePadding', -2)">-</button>
                                             <input type="number" id="bubblePadding" value="12" />
                                             <button type="button" onclick="stepInput('bubblePadding', 2)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="field-col">
+                                        <label for="bubbleGap">간격 (px)</label>
+                                        <div class="stepper-minimal">
+                                            <button type="button" onclick="stepInput('bubbleGap', -2)">-</button>
+                                            <input type="number" id="bubbleGap" value="12" />
+                                            <button type="button" onclick="stepInput('bubbleGap', 2)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="field-col">
+                                        <label for="bubbleWidth">너비 (%)</label>
+                                        <div class="stepper-minimal">
+                                            <button type="button" onclick="stepInput('bubbleWidth', -5)">-</button>
+                                            <input type="number" id="bubbleWidth" value="75" />
+                                            <button type="button" onclick="stepInput('bubbleWidth', 5)">+</button>
                                         </div>
                                     </div>
                                 </div>
