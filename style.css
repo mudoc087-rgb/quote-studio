@@ -731,7 +731,6 @@ input[type="range"] {
     display: flex !important;
     align-items: flex-start;
     gap: 10px;
-    margin: 12px 0;
     position: relative;
     width: 100% !important;
     box-sizing: border-box;
