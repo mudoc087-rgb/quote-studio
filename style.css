@@ -1354,10 +1354,42 @@ body.help-mode-active [data-help]:hover {
     outline: 2px solid rgba(255, 152, 0, 1);
 }
 
+
 .html-block-wrapper {
     margin: 12px 0;
     width: 100% !important;
     box-sizing: border-box;
+    position: relative;
+    pointer-events: none;
+}
+
+.html-block-wrapper .html-input-textarea,
+.html-block-wrapper .html-block-delete-btn,
+.html-block-wrapper .html-render-output {
+    pointer-events: auto;
+}
+
+.html-block-delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    z-index: 5;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.html-block-delete-btn:hover {
+    background: #ef4444;
 }
 
 .html-input-textarea {
@@ -1376,6 +1408,16 @@ body.help-mode-active [data-help]:hover {
     box-sizing: border-box;
 }
 
+.html-input-textarea:focus {
+    border-color: #10b981;
+}
+
+.html-render-output {
+    width: 100%;
+    box-sizing: border-box;
+    word-break: break-all;
+}
+
 #canvasTextWrapper .html-block-wrapper {
     white-space: normal !important;
     text-align: left !important;
@@ -1387,15 +1429,5 @@ body.help-mode-active [data-help]:hover {
 
 #canvasTextWrapper .html-render-output * {
     box-sizing: border-box;
-}
-
-.html-input-textarea:focus {
-    border-color: #10b981;
-}
-
-.html-render-output {
-    width: 100%;
-    box-sizing: border-box;
-    word-break: break-all;
 }
 
