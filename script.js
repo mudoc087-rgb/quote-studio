@@ -297,8 +297,8 @@ function updateCanvas() {
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (textWrapper) {
         let rawHTML = els.editor.innerHTML || "<div><br></div>";
-        textWrapper.innerHTML = rawHTML; 
-        
+        textWrapper.innerHTML = rawHTML;
+
         const canvasHtmlBlocks = textWrapper.querySelectorAll(".html-block-wrapper");
         const editorHtmlBlocks = els.editor.querySelectorAll(".html-block-wrapper");
 
@@ -331,8 +331,6 @@ function updateCanvas() {
 
             canvasBlock.appendChild(renderDiv);
         });
-        
-
         const canvasBubbles = textWrapper.querySelectorAll(".chat-bubble");
         canvasBubbles.forEach((bubble) => {
             if (els.toggleQuotes && els.toggleQuotes.checked) {
@@ -1263,8 +1261,7 @@ function mergeParagraphBackward() {
         el.classList.contains("inline-title-block") ||
         el.classList.contains("inline-subtitle-block") ||
         el.classList.contains("content-image-block") ||
-        el.classList.contains("content-box") ||
-        el.classList.contains("html-block-wrapper");
+        el.classList.contains("content-box");
 
     if (isSpecialBlock(blockEl)) return false;
 
@@ -1967,11 +1964,21 @@ document.getElementById("btnAutoChatParse")?.addEventListener("click", () => {
 if (els.btnAddHtmlBlock) {
     els.btnAddHtmlBlock.addEventListener("click", () => {
         if (!els.editor) return;
-
         const htmlWrapper = document.createElement("div");
         htmlWrapper.className = "html-block-wrapper";
         htmlWrapper.contentEditable = "false";
-        
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "html-block-delete-btn";
+        delBtn.innerHTML = "✕";
+        delBtn.title = "삭제";
+        delBtn.addEventListener("click", () => {
+            htmlWrapper.remove();
+            if (typeof updateCanvas === "function") {
+                updateCanvas();
+            }
+        });
 
         const textarea = document.createElement("textarea");
         textarea.className = "html-input-textarea";
@@ -1988,6 +1995,7 @@ if (els.btnAddHtmlBlock) {
         textarea.addEventListener("change", triggerUpdate);
         textarea.addEventListener("keyup", triggerUpdate);
 
+        htmlWrapper.appendChild(delBtn);
         htmlWrapper.appendChild(textarea);
 
         const sel = window.getSelection();
@@ -2337,7 +2345,6 @@ function updateBgImageStyles() {
 });
 
 document.getElementById("textEditor").addEventListener("paste", function (e) {
-    
     if (e.target && e.target.tagName === "TEXTAREA") {
         return;
     }
@@ -2722,3 +2729,67 @@ if (btnToggleHelp && mouseTooltip) {
 if (els.toggleQuotes) {
     els.toggleQuotes.addEventListener("change", updateCanvas);
 }
+
+document.addEventListener("click", (e) => {
+    const actionTarget = e.target.closest("[data-action]");
+    if (!actionTarget) return;
+
+    const action = actionTarget.getAttribute("data-action");
+    const bubble = actionTarget.closest(".chat-bubble");
+    if (!bubble) return;
+
+    if (action === "flip-bubble") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isRight = bubble.classList.contains("side-right");
+        if (isRight) {
+            bubble.classList.remove("side-right");
+            bubble.classList.add("side-left");
+            bubble.setAttribute("data-side", "left");
+        } else {
+            bubble.classList.remove("side-left");
+            bubble.classList.add("side-right");
+            bubble.setAttribute("data-side", "right");
+        }
+        if (typeof updateCanvas === "function") updateCanvas();
+    }
+
+    if (action === "delete-bubble") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        bubble.remove();
+        if (typeof updateCanvas === "function") updateCanvas();
+    }
+
+    if (action === "change-member") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!chatMembers || chatMembers.length === 0) return;
+
+        const currentMemberId = bubble.getAttribute("data-member-id");
+        let currentIndex = chatMembers.findIndex((m) => m.id == currentMemberId);
+
+        let nextIndex = (currentIndex + 1) % chatMembers.length;
+        if (nextIndex < 0) nextIndex = 0;
+
+        const nextMember = chatMembers[nextIndex];
+
+        bubble.setAttribute("data-member-id", nextMember.id);
+
+        const speakerNode = bubble.querySelector(".bubble-speaker");
+        if (speakerNode) {
+            speakerNode.textContent = nextMember.name;
+            speakerNode.style.color = nextMember.color;
+        }
+
+        const profileNode = bubble.querySelector(".bubble-profile");
+        if (profileNode && typeof setBubbleProfileVisual === "function") {
+            setBubbleProfileVisual(profileNode, nextMember.profile, nextMember.color);
+        }
+
+        if (typeof updateCanvas === "function") updateCanvas();
+    }
+});
