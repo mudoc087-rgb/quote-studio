@@ -297,9 +297,8 @@ function updateCanvas() {
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (textWrapper) {
         let rawHTML = els.editor.innerHTML || "<div><br></div>";
-        textWrapper.innerHTML = rawHTML; // 1. 먼저 캔버스에 에디터 HTML을 복사해 넣은 뒤
-
-        // ==================== [수정 및 교체 영역] ====================
+        textWrapper.innerHTML = rawHTML; 
+        
         const canvasHtmlBlocks = textWrapper.querySelectorAll(".html-block-wrapper");
         const editorHtmlBlocks = els.editor.querySelectorAll(".html-block-wrapper");
 
@@ -310,14 +309,11 @@ function updateCanvas() {
             const textarea = editorBlock.querySelector(".html-input-textarea");
             const rawHtml = textarea ? textarea.value : "";
 
-            // 1. 캔버스 블록 내부 초기화
             canvasBlock.innerHTML = "";
 
-            // 2. 작성한 사용자 HTML/CSS를 온전히 렌더링할 독립 래퍼 생성
             const renderDiv = document.createElement("div");
             renderDiv.className = "html-render-output";
 
-            // 3. 상위 캔버스(#canvasTextWrapper)의 font-size, color, line-height 등의 격리 및 CSS 초기화
             renderDiv.style.cssText = `
         all: initial !important;
         display: block !important;
@@ -326,18 +322,16 @@ function updateCanvas() {
         font-family: inherit;
     `;
 
-            // 4. 입력받은 rawHtml을 HTML DOM 객체로 직접 변환 후 주입하여 인라인 스타일 파싱
             const parser = new DOMParser();
             const parsedDoc = parser.parseFromString(rawHtml, "text/html");
 
-            // body 내의 모든 요소 노드를 renderDiv로 이동
             Array.from(parsedDoc.body.childNodes).forEach((node) => {
                 renderDiv.appendChild(node.cloneNode(true));
             });
 
             canvasBlock.appendChild(renderDiv);
         });
-        // ============================================================
+        
 
         const canvasBubbles = textWrapper.querySelectorAll(".chat-bubble");
         canvasBubbles.forEach((bubble) => {
@@ -1970,21 +1964,20 @@ document.getElementById("btnAutoChatParse")?.addEventListener("click", () => {
 
     updateCanvas();
 });
-// HTML 블럭 추가 버튼 이벤트
 if (els.btnAddHtmlBlock) {
     els.btnAddHtmlBlock.addEventListener("click", () => {
         if (!els.editor) return;
 
         const htmlWrapper = document.createElement("div");
         htmlWrapper.className = "html-block-wrapper";
-        htmlWrapper.contentEditable = "false"; // 래퍼 자체는 contenteditable 거부하여 깨짐 방지
+        htmlWrapper.contentEditable = "false";
+        
 
         const textarea = document.createElement("textarea");
         textarea.className = "html-input-textarea";
         textarea.placeholder =
             "여기에 HTML/CSS 코드를 입력하세요...\n예: <div style='color: red; font-size: 20px; background: yellow;'>디자인 텍스트</div>\n또는 <style>.my-box { color: blue; }</style><div class='my-box'>클래스 적용</div>";
 
-        // 입력(input), 수정 후 이탈(change), 붙여넣기(paste) 시 실시간 캔버스 업데이트
         const triggerUpdate = () => {
             if (typeof updateCanvas === "function") {
                 updateCanvas();
@@ -1997,7 +1990,6 @@ if (els.btnAddHtmlBlock) {
 
         htmlWrapper.appendChild(textarea);
 
-        // 에디터 커서 위치 또는 맨 뒤에 삽입
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0 && els.editor.contains(sel.getRangeAt(0).commonAncestorContainer)) {
             const range = sel.getRangeAt(0);
@@ -2007,7 +1999,6 @@ if (els.btnAddHtmlBlock) {
             els.editor.appendChild(htmlWrapper);
         }
 
-        // 바로 아래 줄로 커서 이동할 수 있도록 빈 div 추가
         const p = document.createElement("div");
         p.innerHTML = "<br>";
         htmlWrapper.after(p);
@@ -2346,7 +2337,7 @@ function updateBgImageStyles() {
 });
 
 document.getElementById("textEditor").addEventListener("paste", function (e) {
-    // HTML 박스(textarea) 안에서 붙여넣기할 때는 에디터 전용 로직을 타지 않고 기본 붙여넣기 허용
+    
     if (e.target && e.target.tagName === "TEXTAREA") {
         return;
     }
