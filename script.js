@@ -42,6 +42,9 @@ const els = {
     bubbleFontSize: document.getElementById("bubbleFontSize"),
     bubbleLineHeight: document.getElementById("bubbleLineHeight"),
     bubblePadding: document.getElementById("bubblePadding"),
+    bubbleGap: document.getElementById("bubbleGap"),
+    bubbleWidth: document.getElementById("bubbleWidth"),
+
     enableQuoteColor: document.getElementById("enableQuoteColor"),
     quoteColorA: document.getElementById("quoteColorA"),
     quoteColorB: document.getElementById("quoteColorB"),
@@ -76,10 +79,25 @@ const els = {
 
 function applyBubbleColors(container) {
     if (!container) return;
+
+    const gapVal = els.bubbleGap && els.bubbleGap.value !== "" ? parseInt(els.bubbleGap.value, 10) : 12;
+    const widthVal = els.bubbleWidth && els.bubbleWidth.value !== "" ? els.bubbleWidth.value : 75;
+
     const bubbles = container.querySelectorAll(".chat-bubble");
-    bubbles.forEach((b) => {
+    bubbles.forEach((b, idx) => {
+        b.style.marginTop = "0px";
+        b.style.paddingTop = "0px";
+        b.style.paddingBottom = "0px";
+
+        b.style.marginBottom = `${gapVal}px`;
+        b.style.marginTop = `${gapVal}px`;
+
+        const contentCol = b.querySelector(".bubble-content-col");
+        if (contentCol) {
+            contentCol.style.maxWidth = `${widthVal}%`;
+        }
+
         const inner = b.querySelector(".bubble-inner") || b;
-        const isRight = b.classList.contains("side-right");
         const textNode = b.querySelector(".bubble-text") || inner;
 
         textNode.style.wordBreak = els.wordBreak ? els.wordBreak.value : "keep-all";
@@ -90,29 +108,22 @@ function applyBubbleColors(container) {
         if (els.bubbleLineHeight && els.bubbleLineHeight.value) {
             textNode.style.lineHeight = `${els.bubbleLineHeight.value}px`;
         }
-
         if (els.bubblePadding && els.bubblePadding.value) {
             inner.style.padding = `${els.bubblePadding.value}px`;
         }
-        const rightBg = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
-        const rightText = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
 
+        const isRight = b.classList.contains("side-right");
         if (isRight) {
-            inner.style.backgroundColor = rightBg;
-            textNode.style.color = rightText;
+            inner.style.backgroundColor = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
+            textNode.style.color = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
         } else {
             const memberId = b.getAttribute("data-member-id");
-            const member = chatMembers.find((m) => m.id == memberId);
-
-            const leftBg = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
-            const leftText = els.globalTextColor ? els.globalTextColor.value : "#252442";
-
-            inner.style.backgroundColor = leftBg;
-            textNode.style.color = leftText;
+            const member = typeof chatMembers !== "undefined" ? chatMembers.find((m) => m.id == memberId) : null;
+            inner.style.backgroundColor = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
+            textNode.style.color = els.globalTextColor ? els.globalTextColor.value : "#252442";
         }
     });
 }
-
 function applyInlineContentBlocks(container) {
     if (!container) return;
     const applyBodyStyleExceptSizeColor = (el) => {
@@ -515,8 +526,12 @@ function updateCanvas() {
             if (idx === allParagraphs.length - 1) {
                 p.style.marginBottom = "0px";
                 p.style.paddingBottom = "0px";
+            } else if (p.classList.contains("chat-bubble")) {
+                const bGap = els.bubbleGap && els.bubbleGap.value ? els.bubbleGap.value : 12;
+                p.style.marginBottom = `${bGap}px`;
             } else {
                 p.style.marginBottom = `${els.paraSpacing.value}px`;
+                p.style.marginTop = `${els.paraSpacing.value}px`;
             }
         });
     }
@@ -939,6 +954,7 @@ document.getElementById("btnItalic").addEventListener("click", () => {
     document.execCommand("italic", false, null);
     updateCanvas();
 });
+
 document.getElementById("btnQuoteWrap").addEventListener("click", () => {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -2234,6 +2250,8 @@ document.addEventListener("DOMContentLoaded", () => {
         els.bubbleFontSize,
         els.bubbleLineHeight,
         els.bubblePadding,
+        els.bubbleGap,
+        els.bubbleWidth,
         els.enableQuoteColor,
         els.quoteColorA,
         els.quoteColorB,
@@ -2793,3 +2811,20 @@ document.addEventListener("click", (e) => {
         if (typeof updateCanvas === "function") updateCanvas();
     }
 });
+function stepInput(id, step) {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    let val = parseInt(input.value, 10);
+    if (isNaN(val)) val = 75;
+
+    val += step;
+
+    val = Math.max(10, Math.min(100, val));
+
+    input.value = val;
+
+    if (typeof updateCanvas === "function") {
+        updateCanvas();
+    }
+}
