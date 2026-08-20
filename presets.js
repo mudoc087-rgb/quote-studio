@@ -216,6 +216,7 @@ window.savePreset = function () {
         "bubbleLineHeight",
         "bubblePadding",
         "bubbleGap",
+        "bubbleNameGap",
         "bubbleWidth",
 
         // 스위치 및 토글 설정
@@ -279,6 +280,12 @@ function applyPreset(name) {
             el.value = data[id];
         }
     });
+
+    if (typeof els !== "undefined") {
+        Object.keys(els).forEach((k) => {
+            els[k] = document.getElementById(k) || els[k];
+        });
+    }
 
     const alignVal = data["alignH"];
     if (alignVal) {
