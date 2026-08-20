@@ -1428,3 +1428,29 @@ body.help-mode-active [data-help]:hover {
 #canvasTextWrapper .html-render-output * {
     box-sizing: border-box;
 }
+
+
+.bubble-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 10px;
+}
+
+.bubble-detail-grid .stepper-minimal {
+    height: 28px;
+}
+
+.bubble-detail-grid .stepper-minimal button {
+    width: 22px;
+    font-size: 12px;
+}
+
+.bubble-detail-grid .stepper-minimal input {
+    font-size: 11.5px;
+}
+
+@media (max-width: 600px) {
+    .bubble-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
