@@ -2828,8 +2828,6 @@ function stepInput(id, step) {
 
     val += step;
 
-    val = Math.min(100, val);
-
     input.value = val;
 
     if (typeof updateCanvas === "function") {
