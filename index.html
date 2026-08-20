@@ -731,9 +731,8 @@
 
                                 <div class="panel-divider" style="margin: 8px 0"></div>
 
-                                <!-- 말풍선 간격 디테일 (5열로 확장) -->
                                 <div class="panel-section-title">말풍선 간격 디테일</div>
-                                <div class="field-row cols-5">
+                                <div class="bubble-detail-grid">
                                     <div class="field-col">
                                         <label for="bubbleFontSize">글자크기</label>
                                         <div class="stepper-minimal">
@@ -764,6 +763,14 @@
                                             <button type="button" onclick="stepInput('bubbleGap', -2)">-</button>
                                             <input type="number" id="bubbleGap" value="12" />
                                             <button type="button" onclick="stepInput('bubbleGap', 2)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="field-col">
+                                        <label for="bubbleNameGap">이름간격</label>
+                                        <div class="stepper-minimal">
+                                            <button type="button" onclick="stepInput('bubbleNameGap', -1)">-</button>
+                                            <input type="number" id="bubbleNameGap" value="4" />
+                                            <button type="button" onclick="stepInput('bubbleNameGap', 1)">+</button>
                                         </div>
                                     </div>
                                     <div class="field-col">
