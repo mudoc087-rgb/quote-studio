@@ -44,6 +44,7 @@ const els = {
     bubblePadding: document.getElementById("bubblePadding"),
     bubbleGap: document.getElementById("bubbleGap"),
     bubbleWidth: document.getElementById("bubbleWidth"),
+    bubbleNameGap: document.getElementById("bubbleNameGap"),
 
     enableQuoteColor: document.getElementById("enableQuoteColor"),
     quoteColorA: document.getElementById("quoteColorA"),
@@ -82,6 +83,7 @@ function applyBubbleColors(container) {
 
     const gapVal = els.bubbleGap && els.bubbleGap.value !== "" ? parseInt(els.bubbleGap.value, 10) : 12;
     const widthVal = els.bubbleWidth && els.bubbleWidth.value !== "" ? els.bubbleWidth.value : 75;
+    const nameGapVal = els.bubbleNameGap && els.bubbleNameGap.value !== "" ? parseInt(els.bubbleNameGap.value, 10) : 4;
 
     const bubbles = container.querySelectorAll(".chat-bubble");
     bubbles.forEach((b, idx) => {
@@ -91,6 +93,12 @@ function applyBubbleColors(container) {
 
         b.style.marginBottom = `${gapVal}px`;
         b.style.marginTop = `${gapVal}px`;
+
+        const speaker = b.querySelector(".bubble-speaker");
+        if (speaker) {
+            speaker.style.marginBottom = `${nameGapVal}px`;
+            speaker.style.lineHeight = "1.2";
+        }
 
         const contentCol = b.querySelector(".bubble-content-col");
         if (contentCol) {
@@ -2819,6 +2827,8 @@ function stepInput(id, step) {
     if (isNaN(val)) val = 75;
 
     val += step;
+
+    val = Math.min(100, val);
 
     input.value = val;
 
