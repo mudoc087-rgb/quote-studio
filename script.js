@@ -531,15 +531,20 @@ function updateCanvas() {
             "#canvasTextWrapper > div, #canvasTextWrapper > p, #canvasTextWrapper > .dialogue-line, #canvasTextWrapper > .chat-bubble"
         );
         allParagraphs.forEach((p, idx) => {
-            if (idx === allParagraphs.length - 1) {
-                p.style.marginBottom = "0px";
-                p.style.paddingBottom = "0px";
-            } else if (p.classList.contains("chat-bubble")) {
+            const isLast = idx === allParagraphs.length - 1;
+            const isFirst = idx === 0;
+
+            if (p.classList.contains("chat-bubble")) {
                 const bGap = els.bubbleGap && els.bubbleGap.value ? els.bubbleGap.value : 12;
-                p.style.marginBottom = `${bGap}px`;
+                p.style.marginTop = isFirst ? "0px" : `${bGap}px`;
+                p.style.marginBottom = isLast ? "0px" : `${bGap}px`;
             } else {
-                p.style.marginBottom = `${els.paraSpacing.value}px`;
-                p.style.marginTop = `${els.paraSpacing.value}px`;
+                p.style.marginTop = isFirst ? "0px" : `${els.paraSpacing.value}px`;
+                p.style.marginBottom = isLast ? "0px" : `${els.paraSpacing.value}px`;
+            }
+
+            if (isLast) {
+                p.style.paddingBottom = "0px";
             }
         });
     }
