@@ -361,50 +361,63 @@
                                         💬 말풍선 & 인물
                                     </summary>
                                     <div style="padding: 12px; border-top: 1px solid var(--color-border-light)">
-                                        <div
-                                            class="checkbox-minimal-group checkbox-row"
-                                            style="
-                                                justify-content: space-around;
-                                                background: #f8fafc;
-                                                padding: 8px;
-                                                border-radius: 6px;
-                                                display: flex;
-                                                gap: 8px;
-                                                margin-bottom: 12px;
-                                            ">
+                                        <div class="character-control-panel">
                                             <button
                                                 id="btnAddMember"
-                                                class="btn btn-ghost"
-                                                style="
-                                                    font-size: 11px;
-                                                    padding: 6px;
-                                                    border: 1px dashed var(--color-border);
-                                                "
+                                                type="button"
+                                                class="character-add-btn"
                                                 data-help="새로운 인물 카드를 추가합니다.(왼쪽)">
-                                                + 인물 추가
+                                                <span class="character-add-icon">+</span>
+                                                <span class="character-add-text">
+                                                    <strong>인물 추가</strong>
+                                                    <small>새 캐릭터 등록</small>
+                                                </span>
                                             </button>
-                                            <label
-                                                style="font-size: 11px; margin: 0; cursor: pointer"
-                                                data-help="체크 시, 대사에 괄호()가 있을 때 자동으로 줄을 바꿔줍니다."
-                                                ><input type="checkbox" id="autoParenBreak" checked />줄바꿈</label
-                                            >
-                                            <label
-                                                style="font-size: 11px; margin: 0; cursor: pointer"
-                                                data-help="모든 말풍선에서 프로필 사진을 숨기거나 표시합니다."
-                                                ><input type="checkbox" id="toggleProfile" checked /> 프사</label
-                                            >
-                                            <label
-                                                style="font-size: 11px; margin: 0; cursor: pointer"
-                                                data-help="모든 말풍선에서 인물 이름을 숨기거나 표시합니다."
-                                                ><input type="checkbox" id="toggleName" checked /> 이름</label
-                                            >
-                                            <label
-                                                style="font-size: 11px; margin: 0; cursor: pointer"
-                                                data-help="말풍선 안의 큰따옴표를 숨기거나 표시합니다."
-                                                ><input type="checkbox" id="toggleQuotes" /> 따옴표</label
-                                            >
+                                            <div class="character-options">
+                                                <label
+                                                    class="character-option"
+                                                    data-help="체크 시, 대사에 괄호()가 있을 때 자동으로 줄을 바꿔줍니다.">
+                                                    <input type="checkbox" id="autoParenBreak" checked /> 줄바꿈
+                                                </label>
+                                                <label
+                                                    class="character-option"
+                                                    data-help="모든 말풍선에서 프로필 사진을 숨기거나 표시합니다.">
+                                                    <input type="checkbox" id="toggleProfile" checked /> 프사
+                                                </label>
+                                                <label
+                                                    class="character-option"
+                                                    data-help="모든 말풍선에서 인물 이름을 숨기거나 표시합니다.">
+                                                    <input type="checkbox" id="toggleName" checked /> 이름
+                                                </label>
+                                                <label
+                                                    class="character-option"
+                                                    data-help="말풍선 안의 큰따옴표를 숨기거나 표시합니다.">
+                                                    <input type="checkbox" id="toggleQuotes" /> 따옴표
+                                                </label>
+                                                <label
+                                                    class="character-option opacity-option"
+                                                    for="bubbleBgOpacity"
+                                                    data-help="숫자를 바꾸면 왼쪽/오른쪽 모든 말풍선 배경 투명도가 한 번에 적용됩니다. (0=완전투명, 100=불투명)">
+                                                    투명도
+                                                    <span class="opacity-control">
+                                                        <button
+                                                            type="button"
+                                                            onclick="stepInput('bubbleBgOpacity', -5)">
+                                                            -
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            id="bubbleBgOpacity"
+                                                            value="100"
+                                                            min="0"
+                                                            max="100" />
+                                                        <button type="button" onclick="stepInput('bubbleBgOpacity', 5)">
+                                                            +
+                                                        </button>
+                                                    </span>
+                                                </label>
+                                            </div>
                                         </div>
-
                                         <div class="member-list-grid">
                                             <div
                                                 class="member-card member-card-fixed"
