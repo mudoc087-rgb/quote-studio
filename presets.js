@@ -207,7 +207,7 @@ window.savePreset = function () {
         "parenColorA",
         "parenColorB",
 
-        // 말풍선 스타일 설정
+      // 말풍선 스타일 설정
         "bubbleColorLeft",
         "bubbleTextColorLeft",
         "bubbleColorRight",
@@ -216,6 +216,7 @@ window.savePreset = function () {
         "bubbleLineHeight",
         "bubblePadding",
         "bubbleGap",
+        "bubbleBgOpacity",
         "bubbleNameGap",
         "bubbleWidth",
 
