@@ -45,7 +45,7 @@ const els = {
     bubbleGap: document.getElementById("bubbleGap"),
     bubbleWidth: document.getElementById("bubbleWidth"),
     bubbleNameGap: document.getElementById("bubbleNameGap"),
-
+    bubbleBgOpacity: document.getElementById("bubbleBgOpacity"),
     enableQuoteColor: document.getElementById("enableQuoteColor"),
     quoteColorA: document.getElementById("quoteColorA"),
     quoteColorB: document.getElementById("quoteColorB"),
@@ -120,14 +120,21 @@ function applyBubbleColors(container) {
             inner.style.padding = `${els.bubblePadding.value}px`;
         }
 
+        const opacityVal =
+            els.bubbleBgOpacity && els.bubbleBgOpacity.value !== ""
+                ? Math.max(0, Math.min(100, parseFloat(els.bubbleBgOpacity.value)))
+                : 100;
+
         const isRight = b.classList.contains("side-right");
         if (isRight) {
-            inner.style.backgroundColor = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
+            const rightBg = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
+            inner.style.backgroundColor = hexToRgba(rightBg, opacityVal);
             textNode.style.color = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
         } else {
             const memberId = b.getAttribute("data-member-id");
             const member = typeof chatMembers !== "undefined" ? chatMembers.find((m) => m.id == memberId) : null;
-            inner.style.backgroundColor = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
+            const leftBg = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
+            inner.style.backgroundColor = hexToRgba(leftBg, opacityVal);
             textNode.style.color = els.globalTextColor ? els.globalTextColor.value : "#252442";
         }
     });
@@ -744,6 +751,22 @@ function hexToRgb(hex) {
     const fullHex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
     return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : "";
+}
+
+function hexToRgba(color, opacityPercent) {
+    if (!color) return color;
+    const alpha = opacityPercent / 100;
+    const nums = color.match(/[\d.]+/g);
+    if (color.startsWith("#")) {
+        const rgb = hexToRgb(color);
+        const rgbNums = rgb.match(/[\d.]+/g);
+        if (!rgbNums) return color;
+        return `rgba(${rgbNums[0]}, ${rgbNums[1]}, ${rgbNums[2]}, ${alpha})`;
+    }
+    if (nums && nums.length >= 3) {
+        return `rgba(${nums[0]}, ${nums[1]}, ${nums[2]}, ${alpha})`;
+    }
+    return color;
 }
 
 function syncLiveHighlights(overrideColors = null) {
@@ -2265,6 +2288,7 @@ document.addEventListener("DOMContentLoaded", () => {
         els.bubblePadding,
         els.bubbleGap,
         els.bubbleWidth,
+        els.bubbleBgOpacity,
         els.enableQuoteColor,
         els.quoteColorA,
         els.quoteColorB,
