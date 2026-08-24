@@ -122,12 +122,14 @@ function applyBubbleColors(container) {
 
         const isRight = b.classList.contains("side-right");
         if (isRight) {
-            inner.style.backgroundColor = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
+            const rightHex = els.bubbleColorRight ? els.bubbleColorRight.value : "#7081ff";
+            inner.style.backgroundColor = hexToRgba(rightHex, globalBubbleOpacity);
             textNode.style.color = els.bubbleTextColorRight ? els.bubbleTextColorRight.value : "#ffffff";
         } else {
             const memberId = b.getAttribute("data-member-id");
             const member = typeof chatMembers !== "undefined" ? chatMembers.find((m) => m.id == memberId) : null;
-            inner.style.backgroundColor = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
+            const leftHex = member && member.bubbleBg ? member.bubbleBg : "#f5f9ff";
+            inner.style.backgroundColor = hexToRgba(leftHex, globalBubbleOpacity);
             textNode.style.color = els.globalTextColor ? els.globalTextColor.value : "#252442";
         }
     });
@@ -746,6 +748,19 @@ function hexToRgb(hex) {
     return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : "";
 }
 
+function hexToRgba(hex, alpha = 1) {
+    const rgb = hexToRgb(hex).match(/\d+/g);
+    return rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})` : hex;
+}
+
+let globalBubbleOpacity = 1;
+document.getElementById("globalBubbleOpacity")?.addEventListener("input", (e) => {
+    let v = parseFloat(e.target.value);
+    if (isNaN(v)) v = 100;
+    v = Math.max(0, Math.min(100, v));
+    globalBubbleOpacity = v / 100;
+    updateCanvas();
+});
 function syncLiveHighlights(overrideColors = null) {
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (!textWrapper) return;
@@ -1804,7 +1819,7 @@ function renderMembers() {
                         const sx = (img.width - size) / 2;
                         const sy = (img.height - size) / 2;
                         ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
-                        member.profile = canvas.toDataURL("image/jpeg", 0.85);
+                        member.profile = canvas.toDataURL("image/png");
                         renderMembers();
                         updateCanvas();
                     };
@@ -1884,7 +1899,9 @@ function renderMembers() {
                     if (speakerNode && propName === "color") speakerNode.style.color = member.color;
 
                     const inner = bubble.querySelector(".bubble-inner") || bubble;
-                    if (propName === "bubbleBg") inner.style.backgroundColor = member.bubbleBg;
+                    if (propName === "bubbleBg") {
+                        inner.style.backgroundColor = hexToRgba(member.bubbleBg, globalBubbleOpacity);
+                    }
                 });
                 updateCanvas();
             });
@@ -1898,6 +1915,7 @@ function renderMembers() {
         };
         colorsWrapper.appendChild(createColorPicker("이름", "color", member.color, "(말풍선 강조선 공통) 이름색"));
         colorsWrapper.appendChild(createColorPicker("배경", "bubbleBg", member.bubbleBg, "말풍선 배경"));
+
         colorsWrapper.appendChild(
             createColorPicker("따옴표", "quoteColor", member.quoteColor, "(말풍선 강조선 공통) 따옴표색")
         );
@@ -2832,6 +2850,8 @@ function stepInput(id, step) {
     if (isNaN(val)) val = 75;
 
     val += step;
+
+    val = Math.min(100, val);
 
     input.value = val;
 
