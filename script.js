@@ -1804,7 +1804,7 @@ function renderMembers() {
                         const sx = (img.width - size) / 2;
                         const sy = (img.height - size) / 2;
                         ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
-                        member.profile = canvas.toDataURL("image/jpeg", 0.85);
+                        member.profile = canvas.toDataURL("image/png");
                         renderMembers();
                         updateCanvas();
                     };
