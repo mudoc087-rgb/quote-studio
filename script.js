@@ -676,6 +676,7 @@ function applySmartHighlighting(container) {
                 const p1 = text.substring(0, localStart);
 
                 const parent = node.parentNode;
+                if (!parent) return;
                 const bubbleAncestor = parent.closest ? parent.closest(".chat-bubble") : null;
                 const dialogueAncestor = parent.closest ? parent.closest(".dialogue-line") : null;
                 const isRightBubble = !!(bubbleAncestor && bubbleAncestor.classList.contains("side-right"));
