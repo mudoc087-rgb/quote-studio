@@ -728,7 +728,7 @@ input[type="range"] {
 
 /* 2. 💬 말풍선 기본 구조 */
 .chat-bubble {
-    display: flex !important;
+    display: flex;
     align-items: flex-start;
     gap: 10px;
     position: relative;
