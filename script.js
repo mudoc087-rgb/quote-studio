@@ -2853,12 +2853,11 @@ function stepInput(id, step) {
     const input = document.getElementById(id);
     if (!input) return;
 
-    let val = parseInt(input.value, 10);
-    if (isNaN(val)) val = 75;
+    let val = Number(input.value);
+    if (!Number.isFinite(val)) val = 0;
 
-    val += step;
-
-    input.value = val;
+    val = Math.round((val + step) * 10) / 10;
+    input.value = String(val);
 
     if (typeof updateCanvas === "function") {
         updateCanvas();
