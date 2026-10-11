@@ -108,6 +108,15 @@ function applyBubbleColors(container) {
         const inner = b.querySelector(".bubble-inner") || b;
         const textNode = b.querySelector(".bubble-text") || inner;
 
+        b.classList.remove("single-line-bubble");
+
+const lineHeight = parseFloat(getComputedStyle(textNode).lineHeight);
+const textHeight = textNode.getBoundingClientRect().height;
+
+if (lineHeight > 0 && textHeight <= lineHeight * 1.5) {
+    b.classList.add("single-line-bubble");
+}
+
         textNode.style.wordBreak = els.wordBreak ? els.wordBreak.value : "keep-all";
 
         if (els.bubbleFontSize && els.bubbleFontSize.value) {
