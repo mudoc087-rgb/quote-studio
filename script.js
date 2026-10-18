@@ -75,8 +75,7 @@ const els = {
     autoParenBreak: document.getElementById("autoParenBreak"),
     toggleQuotes: document.getElementById("toggleQuotes"),
     layoutSelect: document.getElementById("layoutSelect"),
-    midGap: document.getElementById("midGap"),
-    btnIndentParagraphs: document.getElementById("btnIndentParagraphs")
+    midGap: document.getElementById("midGap")
 };
 
 function applyBubbleColors(container) {
@@ -332,10 +331,7 @@ function updateCanvas() {
 
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (textWrapper) {
-        let rawHTML = els.editor.innerHTML.trim();
-        if (!rawHTML) {
-            rawHTML = "<div><br></div>";
-        }
+        let rawHTML = els.editor.innerHTML || "<div><br></div>";
         textWrapper.innerHTML = rawHTML;
 
         const canvasHtmlBlocks = textWrapper.querySelectorAll(".html-block-wrapper");
@@ -632,115 +628,126 @@ function updateCanvas() {
 }
 
 function applySmartHighlighting(container) {
-    const hasQuotes = els.enableQuoteColor && els.enableQuoteColor.checked;
-    const hasParens = els.enableParenColor && els.enableParenColor.checked;
+    const hasQuotes = els.enableQuoteColor.checked;
+    const hasParens = els.enableParenColor.checked;
     if (!hasQuotes && !hasParens) return;
 
-    const walk = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-    let node;
     const textNodes = [];
-    while ((node = walk.nextNode())) {
-        if (node.parentNode && node.parentNode.closest && node.parentNode.closest("[data-manual-quote-color]")) {
-            continue;
-        }
-        textNodes.push(node);
+    const walk = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    let n;
+    while ((n = walk.nextNode())) {
+        textNodes.push(n);
     }
 
+    let fullText = "";
+    const nodeOffsets = [];
     textNodes.forEach((node) => {
-        let text = node.nodeValue;
-        if (!text) return;
+        nodeOffsets.push({ node: node, start: fullText.length, end: fullText.length + node.nodeValue.length });
+        fullText += node.nodeValue;
+    });
 
-        let modified = false;
-        const fragment = document.createDocumentFragment();
-
-        const regex =
-            /(["“「『‹«][^"”」』›»\n]*["“「『‹«]?|\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
-
-        let lastIdx = 0;
+    const intervals = [];
+    if (hasQuotes) {
+        const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/g;
         let match;
-        let safetyCounter = 0;
+        while ((match = quoteRegex.exec(fullText)) !== null) {
+            intervals.push({ start: match.index, end: match.index + match[0].length, type: "quote" });
+        }
+    }
+    if (hasParens) {
+        const parenRegex = /(\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*\s*》)/g;
+        let match;
+        while ((match = parenRegex.exec(fullText)) !== null) {
+            intervals.push({ start: match.index, end: match.index + match[0].length, type: "paren" });
+        }
+    }
 
-        while ((match = regex.exec(text)) !== null) {
-            if (regex.lastIndex === lastIdx) {
-                regex.lastIndex++;
-            }
-            lastIdx = regex.lastIndex;
+    intervals.sort((a, b) => b.start - a.start);
+    intervals.forEach((item) => {
+        for (let i = nodeOffsets.length - 1; i >= 0; i--) {
+            const info = nodeOffsets[i];
+            const overlapStart = Math.max(item.start, info.start);
+            const overlapEnd = Math.min(item.end, info.end);
 
-            safetyCounter++;
-            if (safetyCounter > 10000) {
-                break;
-            }
+            if (overlapStart < overlapEnd) {
+                const node = info.node;
+                const parentCheck = node.parentNode;
+                if (item.type === "quote" && parentCheck.closest && parentCheck.closest("[data-manual-quote-color]")) {
+                    continue;
+                }
 
-            const matchText = match[0];
-            const matchStart = match.index;
+                const localStart = overlapStart - info.start;
+                const localEnd = overlapEnd - info.start;
+                const text = node.nodeValue;
 
-            if (matchStart > lastIdx - matchText.length) {
-                fragment.appendChild(document.createTextNode(text.substring(lastIdx - matchText.length, matchStart)));
-            }
-
-            const firstChar = matchText.charAt(0);
-            const isQuote = ['"', "“", "「", "『", "‹", "«"].includes(firstChar);
-            const isParen = ["(", "[", "{", "〈", "《"].includes(firstChar);
-
-            if ((isQuote && hasQuotes) || (isParen && hasParens)) {
-                const span = document.createElement("span");
-                span.style.fontWeight = "inherit";
-                span.style.fontFamily = "inherit";
-                span.style.backgroundColor = "transparent";
+                const p3 = text.substring(localEnd);
+                const p2 = text.substring(localStart, localEnd);
+                const p1 = text.substring(0, localStart);
 
                 const parent = node.parentNode;
-                const bubbleAncestor = parent && parent.closest ? parent.closest(".chat-bubble") : null;
+                if (!parent) return;
+                const bubbleAncestor = parent.closest ? parent.closest(".chat-bubble") : null;
+                const dialogueAncestor = parent.closest ? parent.closest(".dialogue-line") : null;
                 const isRightBubble = !!(bubbleAncestor && bubbleAncestor.classList.contains("side-right"));
 
-                let memberId = bubbleAncestor ? bubbleAncestor.getAttribute("data-member-id") : null;
-                let member =
-                    memberId && typeof chatMembers !== "undefined" ? chatMembers.find((m) => m.id == memberId) : null;
+                let memberId = null;
+                if (bubbleAncestor) {
+                    memberId = bubbleAncestor.getAttribute("data-member-id");
+                } else if (dialogueAncestor) {
+                    memberId = dialogueAncestor.getAttribute("data-member-id");
+                }
+                const member = memberId ? chatMembers.find((m) => m.id == memberId) : null;
 
-                if (isQuote) {
+                let resolvedColor;
+                if (item.type === "quote") {
                     if (isRightBubble) {
-                        // 우측 말풍선 따옴표 색상 (말풍선&인물의 오른쪽 말풍선 '따옴표' 설정)
-                        span.style.color = els.quoteColorC ? els.quoteColorC.value : "#e5eeff";
+                        resolvedColor = els.quoteColorC ? els.quoteColorC.value : "#e5eeff";
                     } else {
-                        // 좌측 말풍선 또는 일반 텍스트: 인물별 지정 색상이 있으면 우선 적용, 없으면 전역 따옴표 A 색상 사용
-                        span.style.color =
-                            member && member.quoteColor
-                                ? member.quoteColor
-                                : els.quoteColorA
-                                  ? els.quoteColorA.value
-                                  : "#76b6d6";
+                        let memberQuoteColor = member && member.quoteColor ? member.quoteColor : null;
+                        resolvedColor = memberQuoteColor
+                            ? memberQuoteColor
+                            : els.quoteColorA
+                              ? els.quoteColorA.value
+                              : "#76b6d6";
                     }
-                } else if (isParen) {
+                } else {
                     if (isRightBubble) {
-                        // 우측 말풍선 괄호 색상 (말풍선&인물의 오른쪽 말풍선 '괄호' 설정)
-                        span.style.color = els.parenColorB
+                        resolvedColor = els.parenColorB
                             ? els.parenColorB.value
                             : els.parenColorA
                               ? els.parenColorA.value
                               : "#a9bbc1";
                     } else {
-                        // 좌측 말풍선 또는 일반 텍스트: 인물별 지정 괄호 색상이 있으면 우선 적용, 없으면 전역 괄호색(parenColorA) 사용
-                        span.style.color =
-                            member && member.parenColor
-                                ? member.parenColor
-                                : els.parenColorA
-                                  ? els.parenColorA.value
-                                  : "#a9bbc1";
+                        let memberParenColor = member && member.parenColor ? member.parenColor : null;
+                        resolvedColor = memberParenColor
+                            ? memberParenColor
+                            : els.parenColorA
+                              ? els.parenColorA.value
+                              : "#a9bbc1";
                     }
                 }
 
-                span.textContent = matchText;
-                fragment.appendChild(span);
-                modified = true;
-            } else {
-                fragment.appendChild(document.createTextNode(matchText));
-            }
-        }
+                const span = document.createElement("span");
+                span.style.color = resolvedColor;
+                span.style.fontWeight = "inherit";
+                span.style.fontFamily = "inherit";
+                span.style.backgroundColor = "transparent";
+                span.textContent = p2;
 
-        if (modified) {
-            if (lastIdx < text.length) {
-                fragment.appendChild(document.createTextNode(text.substring(lastIdx)));
+                let nextSibling = node.nextSibling;
+                if (p3.length > 0) {
+                    const t3 = document.createTextNode(p3);
+                    parent.insertBefore(t3, nextSibling);
+                    nextSibling = t3;
+                }
+                parent.insertBefore(span, nextSibling);
+
+                if (p1.length > 0) {
+                    node.nodeValue = p1;
+                } else {
+                    parent.removeChild(node);
+                }
             }
-            node.parentNode.replaceChild(fragment, node);
         }
     });
 }
@@ -1134,8 +1141,7 @@ document.getElementById("btnQuoteLineB").addEventListener("click", () => toggleQ
 
 function autoApplyQuoteLines() {
     const chatRegex = /^([^|:]+)\s*([|:])\s*(.+)$/;
-    const quoteOrParenRegex =
-        /(["“「『‹«][^"”」』›»\n]*["“「『‹«]?|\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
+    const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/;
     const blocks = Array.from(els.editor.children);
 
     blocks.forEach((block) => {
@@ -1156,34 +1162,12 @@ function autoApplyQuoteLines() {
         if (matchChat) {
             const speakerName = matchChat[1].trim();
             const separator = matchChat[2];
-            const dialogue = matchChat[3];
+            const dialogue = matchChat[3].trim();
             const member = chatMembers.find((m) => m.name === speakerName);
 
             if (member) {
                 const nameColor = member.color || "inherit";
-                const qColor = member.quoteColor || (els.quoteColorA ? els.quoteColorA.value : "#76b6d6");
-                const pColor = member.parenColor || (els.parenColorA ? els.parenColorA.value : "#a9bbc1");
-                const hasQuotes = els.enableQuoteColor && els.enableQuoteColor.checked;
-                const hasParens = els.enableParenColor && els.enableParenColor.checked;
-
-                // 💡 대사 내부의 따옴표와 괄호에 인물별 설정 색상을 직접 인라인으로 적용합니다.
-                let coloredDialogue = dialogue;
-                if (hasQuotes || hasParens) {
-                    coloredDialogue = dialogue.replace(quoteOrParenRegex, (match) => {
-                        const firstChar = match.charAt(0);
-                        const isQuote = ['"', "“", "「", "『", "‹", "«"].includes(firstChar);
-                        const isParen = ["(", "[", "{", "〈", "《"].includes(firstChar);
-
-                        if (isQuote && hasQuotes) {
-                            return `<span style="color: ${qColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
-                        } else if (isParen && hasParens) {
-                            return `<span style="color: ${pColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
-                        }
-                        return match;
-                    });
-                }
-
-                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator} </span>${coloredDialogue}`;
+                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator}</span> ${dialogue}`;
 
                 block.classList.add("dialogue-line");
                 block.setAttribute("data-line-variant", "A");
@@ -1193,43 +1177,20 @@ function autoApplyQuoteLines() {
                     block.style.setProperty("--quote-line-color-a", member.lineColor);
                 }
             } else {
-                // 인물이 매칭되지 않을 때의 일반 강조선 처리
-                applyGeneralQuoteLine(block);
+                if (quoteRegex.test(text)) {
+                    block.classList.add("dialogue-line");
+                    block.setAttribute("data-line-variant", "A");
+                }
             }
         } else {
-            applyGeneralQuoteLine(block);
+            if (quoteRegex.test(text)) {
+                block.classList.add("dialogue-line");
+                block.setAttribute("data-line-variant", "A");
+            }
         }
     });
+
     updateCanvas();
-}
-
-// 일반 강조선 및 미등록 인물 텍스트 처리 헬퍼 함수
-function applyGeneralQuoteLine(block) {
-    const text = block.textContent || "";
-    const quoteOrParenRegex =
-        /(["“「『‹«][^"”」』›»\n]*["“「『‹«]?|\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
-    const hasQuotes = els.enableQuoteColor && els.enableQuoteColor.checked;
-    const hasParens = els.enableParenColor && els.enableParenColor.checked;
-
-    if (hasQuotes || hasParens) {
-        let coloredText = text.replace(quoteOrParenRegex, (match) => {
-            const firstChar = match.charAt(0);
-            const isQuote = ['"', "“", "「", "『", "‹", "«"].includes(firstChar);
-            const isParen = ["(", "[", "{", "〈", "《"].includes(firstChar);
-            const qColor = els.quoteColorA ? els.quoteColorA.value : "#76b6d6";
-            const pColor = els.parenColorA ? els.parenColorA.value : "#a9bbc1";
-
-            if (isQuote && hasQuotes) {
-                return `<span style="color: ${qColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
-            } else if (isParen && hasParens) {
-                return `<span style="color: ${pColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
-            }
-            return match;
-        });
-        block.innerHTML = coloredText;
-    }
-    block.classList.add("dialogue-line");
-    block.setAttribute("data-line-variant", "A");
 }
 document.getElementById("btnAutoQuoteLine").addEventListener("click", autoApplyQuoteLines);
 
@@ -1690,6 +1651,51 @@ function getEventPoint(e) {
         return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
     return { x: e.clientX, y: e.clientY };
 }
+
+document.getElementById("btnIndentParagraphs")?.addEventListener("click", () => {
+    if (!els.editor) return;
+    els.editor.focus();
+
+    const blocks = Array.from(els.editor.children);
+    if (blocks.length === 0) return;
+
+    const normalBlocks = blocks.filter(
+        (block) =>
+            !block.classList.contains("dialogue-line") &&
+            !block.classList.contains("chat-bubble") &&
+            !block.classList.contains("inline-title-block") &&
+            !block.classList.contains("inline-subtitle-block") &&
+            !block.classList.contains("content-image-block") &&
+            !block.classList.contains("html-block-wrapper") &&
+            block.tagName !== "HR"
+    );
+
+    if (normalBlocks.length === 0) return;
+
+    let allIndented = true;
+    normalBlocks.forEach((block) => {
+        const text = block.textContent || "";
+        if (text.trim() && !text.startsWith("  ") && !text.startsWith("    ")) {
+            allIndented = false;
+        }
+    });
+
+    normalBlocks.forEach((block) => {
+        let text = block.textContent || "";
+        if (!text.trim()) return;
+
+        if (allIndented) {
+            text = text.replace(/^[ \s]+/, "");
+            block.textContent = text;
+        } else {
+            if (!text.startsWith("  ") && !text.startsWith("    ")) {
+                block.textContent = "  " + text;
+            }
+        }
+    });
+
+    updateCanvas();
+});
 
 function handleImgDragStart(e) {
     const resizeHandle = e.target.closest(".content-image-resize-handle");
@@ -2373,6 +2379,10 @@ document.addEventListener("DOMContentLoaded", () => {
             element.addEventListener("change", scheduleUpdateCanvas);
         }
     });
+
+    setTimeout(() => {
+        updateCanvas();
+    }, 50);
 });
 
 document.getElementById("btnCopy").addEventListener("click", async () => {
@@ -2453,8 +2463,6 @@ document.getElementById("textEditor").addEventListener("paste", function (e) {
     e.preventDefault();
     const text = (e.originalEvent || e).clipboardData.getData("text/plain");
     if (!text) return;
-
-    // 줄바꿈을 살리되 내부 공백(띄어쓰기)은 그대로 보존하도록 수정
     const lines = text.split(/\r\n|\r|\n/);
 
     const selection = window.getSelection();
@@ -2535,15 +2543,11 @@ function normalizeParagraphs(container) {
         );
     }
     function captureMeta(node) {
-        const meta = { textAlign: "", textIndent: "", isIndented: false };
-        if (node.style) {
-            if (node.style.textAlign) meta.textAlign = node.style.textAlign;
-            if (node.style.textIndent) meta.textIndent = node.style.textIndent;
+        const meta = { textAlign: "" };
+        if (node.style && node.style.textAlign) {
+            meta.textAlign = node.style.textAlign;
         }
-        if (node.classList && node.classList.contains("indent-paragraph")) {
-            meta.isIndented = true;
-        }
-        return meta.textAlign || meta.textIndent || meta.isIndented ? meta : null;
+        return meta.textAlign ? meta : null;
     }
     function parseNodes(node) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -2561,10 +2565,10 @@ function normalizeParagraphs(container) {
                 paragraphs.push(node.cloneNode(true));
                 flushParagraph();
             } else if (tagName === "DIV" || tagName === "P" || /^H[1-6]$/.test(tagName)) {
+                flushParagraph();
                 const meta = captureMeta(node);
-                if (meta && !currentParaMeta) currentParaMeta = meta;
-
                 Array.from(node.childNodes).forEach(parseNodes);
+                if (meta && !currentParaMeta) currentParaMeta = meta;
                 flushParagraph();
             } else {
                 if (
@@ -2600,8 +2604,6 @@ function normalizeParagraphs(container) {
             const newDiv = document.createElement("div");
             if (pEntry.meta) {
                 if (pEntry.meta.textAlign) newDiv.style.textAlign = pEntry.meta.textAlign;
-                if (pEntry.meta.textIndent) newDiv.style.textIndent = pEntry.meta.textIndent;
-                if (pEntry.meta.isIndented) newDiv.classList.add("indent-paragraph");
             }
             if (pEntry.nodes.length === 0) {
                 newDiv.appendChild(document.createElement("br"));
@@ -2614,41 +2616,6 @@ function normalizeParagraphs(container) {
     if (container.childNodes.length === 0) container.innerHTML = "<div><br></div>";
 }
 
-function toggleParagraphIndent() {
-    if (!els.editor) return;
-
-    const children = Array.from(els.editor.children);
-    if (children.length === 0) return;
-
-    const targetBlocks = children.filter((el) => {
-        return !(
-            el.classList.contains("chat-bubble") ||
-            el.classList.contains("inline-title-block") ||
-            el.classList.contains("inline-subtitle-block") ||
-            el.classList.contains("content-box") ||
-            el.classList.contains("content-image-block") ||
-            el.classList.contains("html-block-wrapper") ||
-            el.classList.contains("dialogue-line") ||
-            el.tagName === "HR"
-        );
-    });
-
-    if (targetBlocks.length === 0) return;
-
-    const hasIndent = targetBlocks[0].classList.contains("indent-paragraph");
-
-    targetBlocks.forEach((block) => {
-        if (hasIndent) {
-            block.classList.remove("indent-paragraph");
-        } else {
-            block.classList.add("indent-paragraph");
-        }
-    });
-
-    updateCanvas();
-}
-
-document.getElementById("btnIndentParagraphs")?.addEventListener("click", toggleParagraphIndent);
 document.getElementById("layoutSelect").addEventListener("change", updateCanvas);
 if (els.midGap) {
     els.midGap.addEventListener("input", updateCanvas);
