@@ -1134,7 +1134,8 @@ document.getElementById("btnQuoteLineB").addEventListener("click", () => toggleQ
 
 function autoApplyQuoteLines() {
     const chatRegex = /^([^|:]+)\s*([|:])\s*(.+)$/;
-    const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/;
+    const quoteOrParenRegex =
+        /(["“「『‹«][^"”」』›»\n]*["“「『‹«]?|\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
     const blocks = Array.from(els.editor.children);
 
     blocks.forEach((block) => {
@@ -1155,13 +1156,34 @@ function autoApplyQuoteLines() {
         if (matchChat) {
             const speakerName = matchChat[1].trim();
             const separator = matchChat[2];
-            const dialogue = matchChat[3]; // trim()을 제거하여 원본 띄어쓰기 보호
+            const dialogue = matchChat[3];
             const member = chatMembers.find((m) => m.name === speakerName);
 
             if (member) {
                 const nameColor = member.color || "inherit";
-                // ⚠️ 핵심: 구분자와 대사 사이의 띄어쓰기( 공백 )가 정상 유지되도록 수정
-                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator} </span>${dialogue}`;
+                const qColor = member.quoteColor || (els.quoteColorA ? els.quoteColorA.value : "#76b6d6");
+                const pColor = member.parenColor || (els.parenColorA ? els.parenColorA.value : "#a9bbc1");
+                const hasQuotes = els.enableQuoteColor && els.enableQuoteColor.checked;
+                const hasParens = els.enableParenColor && els.enableParenColor.checked;
+
+                // 💡 대사 내부의 따옴표와 괄호에 인물별 설정 색상을 직접 인라인으로 적용합니다.
+                let coloredDialogue = dialogue;
+                if (hasQuotes || hasParens) {
+                    coloredDialogue = dialogue.replace(quoteOrParenRegex, (match) => {
+                        const firstChar = match.charAt(0);
+                        const isQuote = ['"', "“", "「", "『", "‹", "«"].includes(firstChar);
+                        const isParen = ["(", "[", "{", "〈", "《"].includes(firstChar);
+
+                        if (isQuote && hasQuotes) {
+                            return `<span style="color: ${qColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
+                        } else if (isParen && hasParens) {
+                            return `<span style="color: ${pColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
+                        }
+                        return match;
+                    });
+                }
+
+                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator} </span>${coloredDialogue}`;
 
                 block.classList.add("dialogue-line");
                 block.setAttribute("data-line-variant", "A");
@@ -1171,19 +1193,43 @@ function autoApplyQuoteLines() {
                     block.style.setProperty("--quote-line-color-a", member.lineColor);
                 }
             } else {
-                if (quoteRegex.test(text)) {
-                    block.classList.add("dialogue-line");
-                    block.setAttribute("data-line-variant", "A");
-                }
+                // 인물이 매칭되지 않을 때의 일반 강조선 처리
+                applyGeneralQuoteLine(block);
             }
         } else {
-            if (quoteRegex.test(text)) {
-                block.classList.add("dialogue-line");
-                block.setAttribute("data-line-variant", "A");
-            }
+            applyGeneralQuoteLine(block);
         }
     });
     updateCanvas();
+}
+
+// 일반 강조선 및 미등록 인물 텍스트 처리 헬퍼 함수
+function applyGeneralQuoteLine(block) {
+    const text = block.textContent || "";
+    const quoteOrParenRegex =
+        /(["“「『‹«][^"”」』›»\n]*["“「『‹«]?|\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
+    const hasQuotes = els.enableQuoteColor && els.enableQuoteColor.checked;
+    const hasParens = els.enableParenColor && els.enableParenColor.checked;
+
+    if (hasQuotes || hasParens) {
+        let coloredText = text.replace(quoteOrParenRegex, (match) => {
+            const firstChar = match.charAt(0);
+            const isQuote = ['"', "“", "「", "『", "‹", "«"].includes(firstChar);
+            const isParen = ["(", "[", "{", "〈", "《"].includes(firstChar);
+            const qColor = els.quoteColorA ? els.quoteColorA.value : "#76b6d6";
+            const pColor = els.parenColorA ? els.parenColorA.value : "#a9bbc1";
+
+            if (isQuote && hasQuotes) {
+                return `<span style="color: ${qColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
+            } else if (isParen && hasParens) {
+                return `<span style="color: ${pColor}; font-weight: inherit; font-family: inherit; background-color: transparent;">${match}</span>`;
+            }
+            return match;
+        });
+        block.innerHTML = coloredText;
+    }
+    block.classList.add("dialogue-line");
+    block.setAttribute("data-line-variant", "A");
 }
 document.getElementById("btnAutoQuoteLine").addEventListener("click", autoApplyQuoteLines);
 
