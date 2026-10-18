@@ -1580,23 +1580,6 @@ body.help-mode-active [data-help]:hover {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
-
 .hide-names .chat-bubble.single-line-bubble {
     align-items: center;
-}
-
-#textEditor .indent-paragraph,
-#canvasTextWrapper .indent-paragraph {
-    text-indent: 1em;
-}
-
-#captureArea {
-    position: relative;
-    box-shadow: var(--shadow-canvas);
-    overflow: hidden;
-    background: var(--color-white);
-    border-radius: 0;
-
-    min-width: 600px;
-    min-height: 400px;
 }
