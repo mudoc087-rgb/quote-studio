@@ -22,7 +22,6 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -334,6 +333,12 @@
                                             class="btn-editor-pill pill-green"
                                             data-help="본문의 따옴표를 감지하여 말풍선으로 변환합니다.&#10;[인물명 | “대사”] 형태로 적혀있으면 아래 [말풍선&인물] 설정에 맞춰 컬러가 자동 지정됩니다.&#10;인물 변경은 프로필 사진 클릭&#10;">
                                             ⚡자동말풍선
+                                        </button>
+                                        <button
+                                            id="btnIndentParagraphs"
+                                            class="btn-editor-pill pill-blue"
+                                            data-help="일반 글 문단의 첫 줄에 들여쓰기(공백 2칸)를 추가하거나 적용된 들여쓰기를 제거합니다.">
+                                            들여쓰기
                                         </button>
                                     </div>
 
@@ -708,12 +713,12 @@
                                         <label for="letterSpacing">자간 (px)</label>
                                         <div class="stepper-minimal">
                                             <button type="button" onclick="stepInput('letterSpacing', -0.1, 1)">
-    -
-</button>
-<input type="number" id="letterSpacing" value="-0.5" step="0.1" />
-<button type="button" onclick="stepInput('letterSpacing', 0.1, 1)">
-    +
-</button>
+                                                -
+                                            </button>
+                                            <input type="number" id="letterSpacing" value="-0.5" step="0.1" />
+                                            <button type="button" onclick="stepInput('letterSpacing', 0.1, 1)">
+                                                +
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="field-col">
@@ -846,8 +851,8 @@
                                 <div class="panel-section-title">스마트 하이라이트</div>
 
                                 <div class="checkbox-minimal-group checkbox-row">
-                                    <label><input type="checkbox" id="enableQuoteColor" checked /> 따옴표 감지</label>
-                                    <label><input type="checkbox" id="enableParenColor" checked /> 괄호 감지</label>
+                                    <label><input type="checkbox" id="enableQuoteColor" /> 따옴표 감지</label>
+                                    <label><input type="checkbox" id="enableParenColor" /> 괄호 감지</label>
                                     <label><input type="checkbox" id="enableTextShadow" /> 그림자 효과</label>
                                 </div>
 

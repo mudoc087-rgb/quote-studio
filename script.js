@@ -75,7 +75,8 @@ const els = {
     autoParenBreak: document.getElementById("autoParenBreak"),
     toggleQuotes: document.getElementById("toggleQuotes"),
     layoutSelect: document.getElementById("layoutSelect"),
-    midGap: document.getElementById("midGap")
+    midGap: document.getElementById("midGap"),
+    btnIndentParagraphs: document.getElementById("btnIndentParagraphs")
 };
 
 function applyBubbleColors(container) {
@@ -110,12 +111,12 @@ function applyBubbleColors(container) {
 
         b.classList.remove("single-line-bubble");
 
-const lineHeight = parseFloat(getComputedStyle(textNode).lineHeight);
-const textHeight = textNode.getBoundingClientRect().height;
+        const lineHeight = parseFloat(getComputedStyle(textNode).lineHeight);
+        const textHeight = textNode.getBoundingClientRect().height;
 
-if (lineHeight > 0 && textHeight <= lineHeight * 1.5) {
-    b.classList.add("single-line-bubble");
-}
+        if (lineHeight > 0 && textHeight <= lineHeight * 1.5) {
+            b.classList.add("single-line-bubble");
+        }
 
         textNode.style.wordBreak = els.wordBreak ? els.wordBreak.value : "keep-all";
 
@@ -331,7 +332,10 @@ function updateCanvas() {
 
     const textWrapper = document.getElementById("canvasTextWrapper");
     if (textWrapper) {
-        let rawHTML = els.editor.innerHTML || "<div><br></div>";
+        let rawHTML = els.editor.innerHTML.trim();
+        if (!rawHTML) {
+            rawHTML = "<div><br></div>";
+        }
         textWrapper.innerHTML = rawHTML;
 
         const canvasHtmlBlocks = textWrapper.querySelectorAll(".html-block-wrapper");
@@ -628,126 +632,112 @@ function updateCanvas() {
 }
 
 function applySmartHighlighting(container) {
-    const hasQuotes = els.enableQuoteColor.checked;
-    const hasParens = els.enableParenColor.checked;
+    const hasQuotes = els.enableQuoteColor && els.enableQuoteColor.checked;
+    const hasParens = els.enableParenColor && els.enableParenColor.checked;
     if (!hasQuotes && !hasParens) return;
 
-    const textNodes = [];
     const walk = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-    let n;
-    while ((n = walk.nextNode())) {
-        textNodes.push(n);
+    let node;
+    const textNodes = [];
+    while ((node = walk.nextNode())) {
+        if (node.parentNode && node.parentNode.closest && node.parentNode.closest("[data-manual-quote-color]")) {
+            continue;
+        }
+        textNodes.push(node);
     }
 
-    let fullText = "";
-    const nodeOffsets = [];
     textNodes.forEach((node) => {
-        nodeOffsets.push({ node: node, start: fullText.length, end: fullText.length + node.nodeValue.length });
-        fullText += node.nodeValue;
-    });
+        let text = node.nodeValue;
+        if (!text) return;
 
-    const intervals = [];
-    if (hasQuotes) {
-        const quoteRegex = /("[^"\n]*"|“[^”\n]*”|「[^」\n]*」|『[^』\n]*』|‹[^›\n]*›|«[^»\n]*»)/g;
+        let modified = false;
+        const fragment = document.createDocumentFragment();
+
+        const regex =
+            /(["“「『‹«][^"”」』›»\n]*["“「『‹«]?|\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*》)/g;
+
+        let lastIdx = 0;
         let match;
-        while ((match = quoteRegex.exec(fullText)) !== null) {
-            intervals.push({ start: match.index, end: match.index + match[0].length, type: "quote" });
-        }
-    }
-    if (hasParens) {
-        const parenRegex = /(\([^)\n]*\)|\[[^\]\n]*\]|\{[^}\n]*\}|〈[^〉\n]*〉|《[^》\n]*\s*》)/g;
-        let match;
-        while ((match = parenRegex.exec(fullText)) !== null) {
-            intervals.push({ start: match.index, end: match.index + match[0].length, type: "paren" });
-        }
-    }
+        let safetyCounter = 0;
 
-    intervals.sort((a, b) => b.start - a.start);
-    intervals.forEach((item) => {
-        for (let i = nodeOffsets.length - 1; i >= 0; i--) {
-            const info = nodeOffsets[i];
-            const overlapStart = Math.max(item.start, info.start);
-            const overlapEnd = Math.min(item.end, info.end);
+        while ((match = regex.exec(text)) !== null) {
+            if (regex.lastIndex === lastIdx) {
+                regex.lastIndex++;
+            }
+            lastIdx = regex.lastIndex;
 
-            if (overlapStart < overlapEnd) {
-                const node = info.node;
-                const parentCheck = node.parentNode;
-                if (item.type === "quote" && parentCheck.closest && parentCheck.closest("[data-manual-quote-color]")) {
-                    continue;
-                }
+            safetyCounter++;
+            if (safetyCounter > 10000) {
+                console.warn("Smart highlighting safety break triggered.");
+                break;
+            }
 
-                const localStart = overlapStart - info.start;
-                const localEnd = overlapEnd - info.start;
-                const text = node.nodeValue;
+            const matchText = match[0];
+            const matchStart = match.index;
 
-                const p3 = text.substring(localEnd);
-                const p2 = text.substring(localStart, localEnd);
-                const p1 = text.substring(0, localStart);
+            if (matchStart > lastIdx - matchText.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIdx - matchText.length, matchStart)));
+            }
+
+            const firstChar = matchText.charAt(0);
+            const isQuote = ['"', "“", "「", "『", "‹", "«"].includes(firstChar);
+            const isParen = ["(", "[", "{", "〈", "《"].includes(firstChar);
+
+            if ((isQuote && hasQuotes) || (isParen && hasParens)) {
+                const span = document.createElement("span");
+                span.style.fontWeight = "inherit";
+                span.style.fontFamily = "inherit";
+                span.style.backgroundColor = "transparent";
 
                 const parent = node.parentNode;
-                if (!parent) return;
-                const bubbleAncestor = parent.closest ? parent.closest(".chat-bubble") : null;
-                const dialogueAncestor = parent.closest ? parent.closest(".dialogue-line") : null;
+                const bubbleAncestor = parent && parent.closest ? parent.closest(".chat-bubble") : null;
                 const isRightBubble = !!(bubbleAncestor && bubbleAncestor.classList.contains("side-right"));
 
-                let memberId = null;
-                if (bubbleAncestor) {
-                    memberId = bubbleAncestor.getAttribute("data-member-id");
-                } else if (dialogueAncestor) {
-                    memberId = dialogueAncestor.getAttribute("data-member-id");
-                }
-                const member = memberId ? chatMembers.find((m) => m.id == memberId) : null;
+                let memberId = bubbleAncestor ? bubbleAncestor.getAttribute("data-member-id") : null;
+                let member =
+                    memberId && typeof chatMembers !== "undefined" ? chatMembers.find((m) => m.id == memberId) : null;
 
-                let resolvedColor;
-                if (item.type === "quote") {
+                if (isQuote) {
                     if (isRightBubble) {
-                        resolvedColor = els.quoteColorB ? els.quoteColorC.value : "#e5eeff";
+                        span.style.color = els.quoteColorB ? els.quoteColorC.value : "#e5eeff";
                     } else {
-                        let memberQuoteColor = member && member.quoteColor ? member.quoteColor : null;
-                        resolvedColor = memberQuoteColor
-                            ? memberQuoteColor
-                            : els.quoteColorA
-                              ? els.quoteColorA.value
-                              : "#76b6d6";
+                        span.style.color =
+                            member && member.quoteColor
+                                ? member.quoteColor
+                                : els.quoteColorA
+                                  ? els.quoteColorA.value
+                                  : "#76b6d6";
                     }
-                } else {
+                } else if (isParen) {
                     if (isRightBubble) {
-                        resolvedColor = els.parenColorB
+                        span.style.color = els.parenColorB
                             ? els.parenColorB.value
                             : els.parenColorA
                               ? els.parenColorA.value
                               : "#a9bbc1";
                     } else {
-                        let memberParenColor = member && member.parenColor ? member.parenColor : null;
-                        resolvedColor = memberParenColor
-                            ? memberParenColor
-                            : els.parenColorA
-                              ? els.parenColorA.value
-                              : "#a9bbc1";
+                        span.style.color =
+                            member && member.parenColor
+                                ? member.parenColor
+                                : els.parenColorA
+                                  ? els.parenColorA.value
+                                  : "#a9bbc1";
                     }
                 }
 
-                const span = document.createElement("span");
-                span.style.color = resolvedColor;
-                span.style.fontWeight = "inherit";
-                span.style.fontFamily = "inherit";
-                span.style.backgroundColor = "transparent";
-                span.textContent = p2;
-
-                let nextSibling = node.nextSibling;
-                if (p3.length > 0) {
-                    const t3 = document.createTextNode(p3);
-                    parent.insertBefore(t3, nextSibling);
-                    nextSibling = t3;
-                }
-                parent.insertBefore(span, nextSibling);
-
-                if (p1.length > 0) {
-                    node.nodeValue = p1;
-                } else {
-                    parent.removeChild(node);
-                }
+                span.textContent = matchText;
+                fragment.appendChild(span);
+                modified = true;
+            } else {
+                fragment.appendChild(document.createTextNode(matchText));
             }
+        }
+
+        if (modified) {
+            if (lastIdx < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIdx)));
+            }
+            node.parentNode.replaceChild(fragment, node);
         }
     });
 }
@@ -2333,10 +2323,6 @@ document.addEventListener("DOMContentLoaded", () => {
             element.addEventListener("change", scheduleUpdateCanvas);
         }
     });
-
-    setTimeout(() => {
-        updateCanvas();
-    }, 50);
 });
 
 document.getElementById("btnCopy").addEventListener("click", async () => {
@@ -2497,11 +2483,15 @@ function normalizeParagraphs(container) {
         );
     }
     function captureMeta(node) {
-        const meta = { textAlign: "" };
-        if (node.style && node.style.textAlign) {
-            meta.textAlign = node.style.textAlign;
+        const meta = { textAlign: "", textIndent: "", isIndented: false };
+        if (node.style) {
+            if (node.style.textAlign) meta.textAlign = node.style.textAlign;
+            if (node.style.textIndent) meta.textIndent = node.style.textIndent;
         }
-        return meta.textAlign ? meta : null;
+        if (node.classList && node.classList.contains("indent-paragraph")) {
+            meta.isIndented = true;
+        }
+        return meta.textAlign || meta.textIndent || meta.isIndented ? meta : null;
     }
     function parseNodes(node) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -2519,10 +2509,10 @@ function normalizeParagraphs(container) {
                 paragraphs.push(node.cloneNode(true));
                 flushParagraph();
             } else if (tagName === "DIV" || tagName === "P" || /^H[1-6]$/.test(tagName)) {
-                flushParagraph();
                 const meta = captureMeta(node);
-                Array.from(node.childNodes).forEach(parseNodes);
                 if (meta && !currentParaMeta) currentParaMeta = meta;
+
+                Array.from(node.childNodes).forEach(parseNodes);
                 flushParagraph();
             } else {
                 if (
@@ -2558,6 +2548,8 @@ function normalizeParagraphs(container) {
             const newDiv = document.createElement("div");
             if (pEntry.meta) {
                 if (pEntry.meta.textAlign) newDiv.style.textAlign = pEntry.meta.textAlign;
+                if (pEntry.meta.textIndent) newDiv.style.textIndent = pEntry.meta.textIndent;
+                if (pEntry.meta.isIndented) newDiv.classList.add("indent-paragraph");
             }
             if (pEntry.nodes.length === 0) {
                 newDiv.appendChild(document.createElement("br"));
@@ -2570,6 +2562,41 @@ function normalizeParagraphs(container) {
     if (container.childNodes.length === 0) container.innerHTML = "<div><br></div>";
 }
 
+function toggleParagraphIndent() {
+    if (!els.editor) return;
+
+    const children = Array.from(els.editor.children);
+    if (children.length === 0) return;
+
+    const targetBlocks = children.filter((el) => {
+        return !(
+            el.classList.contains("chat-bubble") ||
+            el.classList.contains("inline-title-block") ||
+            el.classList.contains("inline-subtitle-block") ||
+            el.classList.contains("content-box") ||
+            el.classList.contains("content-image-block") ||
+            el.classList.contains("html-block-wrapper") ||
+            el.classList.contains("dialogue-line") ||
+            el.tagName === "HR"
+        );
+    });
+
+    if (targetBlocks.length === 0) return;
+
+    const hasIndent = targetBlocks[0].classList.contains("indent-paragraph");
+
+    targetBlocks.forEach((block) => {
+        if (hasIndent) {
+            block.classList.remove("indent-paragraph");
+        } else {
+            block.classList.add("indent-paragraph");
+        }
+    });
+
+    updateCanvas();
+}
+
+document.getElementById("btnIndentParagraphs")?.addEventListener("click", toggleParagraphIndent);
 document.getElementById("layoutSelect").addEventListener("change", updateCanvas);
 if (els.midGap) {
     els.midGap.addEventListener("input", updateCanvas);
