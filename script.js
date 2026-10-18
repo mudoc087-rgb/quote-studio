@@ -698,10 +698,10 @@ function applySmartHighlighting(container) {
 
                 if (isQuote) {
                     if (isRightBubble) {
-                        // 🛠️ 우측 말풍선 따옴표 색상 확실히 반영
+                        // 우측 말풍선 따옴표 색상 (말풍선&인물의 오른쪽 말풍선 '따옴표' 설정)
                         span.style.color = els.quoteColorC ? els.quoteColorC.value : "#e5eeff";
                     } else {
-                        // 🛠️ 좌측 말풍선 또는 일반 텍스트 따옴표 색상 확실히 반영
+                        // 좌측 말풍선 또는 일반 텍스트: 인물별 지정 색상이 있으면 우선 적용, 없으면 전역 따옴표 A 색상 사용
                         span.style.color =
                             member && member.quoteColor
                                 ? member.quoteColor
@@ -711,12 +711,14 @@ function applySmartHighlighting(container) {
                     }
                 } else if (isParen) {
                     if (isRightBubble) {
+                        // 우측 말풍선 괄호 색상 (말풍선&인물의 오른쪽 말풍선 '괄호' 설정)
                         span.style.color = els.parenColorB
                             ? els.parenColorB.value
                             : els.parenColorA
                               ? els.parenColorA.value
                               : "#a9bbc1";
                     } else {
+                        // 좌측 말풍선 또는 일반 텍스트: 인물별 지정 괄호 색상이 있으면 우선 적용, 없으면 전역 괄호색(parenColorA) 사용
                         span.style.color =
                             member && member.parenColor
                                 ? member.parenColor
