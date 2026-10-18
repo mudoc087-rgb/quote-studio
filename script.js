@@ -668,7 +668,6 @@ function applySmartHighlighting(container) {
 
             safetyCounter++;
             if (safetyCounter > 10000) {
-                console.warn("Smart highlighting safety break triggered.");
                 break;
             }
 
@@ -699,8 +698,10 @@ function applySmartHighlighting(container) {
 
                 if (isQuote) {
                     if (isRightBubble) {
-                        span.style.color = els.quoteColorB ? els.quoteColorC.value : "#e5eeff";
+                        // 🛠️ 우측 말풍선 따옴표 색상 확실히 반영
+                        span.style.color = els.quoteColorC ? els.quoteColorC.value : "#e5eeff";
                     } else {
+                        // 🛠️ 좌측 말풍선 또는 일반 텍스트 따옴표 색상 확실히 반영
                         span.style.color =
                             member && member.quoteColor
                                 ? member.quoteColor
@@ -1152,12 +1153,13 @@ function autoApplyQuoteLines() {
         if (matchChat) {
             const speakerName = matchChat[1].trim();
             const separator = matchChat[2];
-            const dialogue = matchChat[3].trim();
+            const dialogue = matchChat[3]; // trim()을 제거하여 원본 띄어쓰기 보호
             const member = chatMembers.find((m) => m.name === speakerName);
 
             if (member) {
                 const nameColor = member.color || "inherit";
-                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator}</span> ${dialogue}`;
+                // ⚠️ 핵심: 구분자와 대사 사이의 띄어쓰기( 공백 )가 정상 유지되도록 수정
+                block.innerHTML = `<span class="speaker-name-inline" style="color: ${nameColor}; font-weight: bold;">${speakerName}</span><span style="color: ${nameColor}; font-weight: normal;"> ${separator} </span>${dialogue}`;
 
                 block.classList.add("dialogue-line");
                 block.setAttribute("data-line-variant", "A");
@@ -2403,6 +2405,8 @@ document.getElementById("textEditor").addEventListener("paste", function (e) {
     e.preventDefault();
     const text = (e.originalEvent || e).clipboardData.getData("text/plain");
     if (!text) return;
+
+    // 줄바꿈을 살리되 내부 공백(띄어쓰기)은 그대로 보존하도록 수정
     const lines = text.split(/\r\n|\r|\n/);
 
     const selection = window.getSelection();
